@@ -1,7 +1,7 @@
 """
 Contém a classe Morador, que herda de Veiculo.
 """
-
+from src.utils.validations import validate_apartamento
 from src.classes.Veiculo import Veiculo
 
 class Morador(Veiculo):
@@ -52,6 +52,7 @@ class Morador(Veiculo):
     def to_dict(self):
         """Sobrescreve to_dict para incluir a vaga."""
         data = super().to_dict() # Pega os dados do pai
-        data = ['apartamento'] = self.apartamento
+        data['apartamento'] = self.apartamento
         data['vaga_id'] = self.vaga_id
+
         return data

@@ -1,0 +1,157 @@
+"""
+Módulo de Repositório para o Sistema de Estacionamento.
+Gerencia a persistência de Moradores e Visitantes usando SQLite.
+"""
+
+import sqlite3
+from datetime import datetime
+from . import queries
+from src.utils.db_connection import DatabaseManager
+from src.classes.Morador import Morador
+from src.classes.Visitante import Visitante
+
+class EstacionamentoRepository:
+    """
+    Gerencia todas as operações de banco de dados.
+    """
+
+    def __init__(self, db_path: str):
+        self.db_manager = DatabaseManager(db_path)
+        self.conn = None
+        self._create_tables()
+
+    # --- Protocolo Context Manager (para usar 'with repo:') ---
+    def __enter__(self):
+        self.conn = self.db_manager.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.db_manager.__exit__(exc_type, exc_val, exc_tb)
+        self.conn = None
+
+    def _get_cursor(self):
+        """Retorna o cursor da conexão ativa ou cria uma temporária."""
+        if self.conn:
+            return self.conn.cursor()
+        return self.db_manager.__enter__().cursor()
+
+    # --- Inicialização ---
+
+    def _create_tables(self):
+        """Cria as tabelas se não existirem."""
+        try:
+            # Usa uma conexão temporária para garantir a criação
+            with self.db_manager as conn:
+                conn.execute(queries.CREATE_TABLE_MORADORES)
+                conn.execute(queries.CREATE_TABLE_VISITANTES)
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao criar tabelas: {e}")
+
+    # --- CRUD Moradores ---
+
+    def adicionar_morador(self, morador: Morador):
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.INSERT_MORADOR, (
+                morador.nome,
+                morador.placa,
+                morador.cnh,
+                morador.modelo,
+                morador.cor,
+                morador.apartamento,
+                morador.vaga_id
+            ))
+            # O commit é feito automaticamente pelo __exit__ do context manager
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao adicionar morador: {e}")
+            raise
+
+    def listar_moradores(self):
+        """Retorna uma lista de objetos Morador."""
+        cursor = self._get_cursor()
+        lista_moradores = []
+        try:
+            cursor.execute(queries.SELECT_ALL_MORADORES)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                # Desempacota a tupla do banco
+                id_db, nome, placa, cnh, modelo, cor, apto, vaga = row
+                
+                # Instancia o objeto (Dumb Class)
+                m = Morador(id=id_db, nome=nome, placa=placa, cnh=cnh, 
+                            modelo=modelo, cor=cor, apartamento=apto, vaga_id=vaga)
+                lista_moradores.append(m)
+                
+            return lista_moradores
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao listar moradores: {e}")
+            return []
+
+    def remover_morador(self, morador_id):
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.DELETE_MORADOR, (morador_id,))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao remover morador: {e}")
+            raise
+
+    # --- CRUD Visitantes (Entrada/Saída) ---
+
+    def registrar_entrada(self, visitante: Visitante):
+        cursor = self._get_cursor()
+        try:
+            # Converte datetime para string ISO para salvar no SQLite
+            data_iso = visitante.entrada.isoformat()
+            
+            cursor.execute(queries.INSERT_VISITANTE, (
+                visitante.nome,
+                visitante.placa,
+                visitante.cnh,
+                visitante.modelo,
+                visitante.cor,
+                data_iso
+            ))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao registrar entrada: {e}")
+            raise
+
+    def registrar_saida(self, visitante_id):
+        """Remove o visitante da tabela de ativos."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.DELETE_VISITANTE, (visitante_id,))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao registrar saída: {e}")
+            raise
+
+    def listar_visitantes_ativos(self):
+        """Retorna lista de objetos Visitante que estão no estacionamento."""
+        cursor = self._get_cursor()
+        lista = []
+        try:
+            cursor.execute(queries.SELECT_ALL_VISITANTES)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                id_db, nome, placa, cnh, modelo, cor, entrada_iso = row
+                
+                # Converte string ISO de volta para datetime
+                data_entrada = datetime.fromisoformat(entrada_iso)
+                
+                v = Visitante(id=id_db, nome=nome, placa=placa, cnh=cnh,
+                              modelo=modelo, cor=cor, entrada=data_entrada)
+                lista.append(v)
+            return lista
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao listar visitantes: {e}")
+            return []
+
+    def contar_visitantes_ativos(self):
+        """Usado para hidratar a 'Catraca' (Classe Estacionamento)."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.COUNT_VISITANTES)
+            return cursor.fetchone()[0] # Retorna o número inteiro (COUNT)
+        except sqlite3.Error:
+            return 0
