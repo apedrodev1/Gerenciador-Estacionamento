@@ -57,7 +57,6 @@ class Veiculo:
 
     @placa.setter
     def placa(self, valor):
-        # Assumindo que criaremos validate_placa em utils/validations.py
         val, erro = validate_placa(valor) 
         if erro:
             raise ValueError(f"Placa inválida: {erro}")
