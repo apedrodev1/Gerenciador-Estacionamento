@@ -1,6 +1,5 @@
 """
 Contém todas as constantes de queries SQL usadas pelo Repositório.
-Mantém a lógica do banco separada do código Python.
 """
 
 # --- Criação de Tabelas ---
@@ -14,11 +13,12 @@ CREATE TABLE IF NOT EXISTS moradores (
     modelo TEXT,
     cor TEXT,
     apartamento TEXT NOT NULL,
-    vaga_id INTEGER
-    estacionado INTEGER DEFAULT 0  -- 0: Fora, 1: Dentro
+    vaga_id INTEGER,
+    estacionado INTEGER DEFAULT 0
 );
 """
 
+# ADICIONADO: numero_vaga
 CREATE_TABLE_VISITANTES = """
 CREATE TABLE IF NOT EXISTS visitantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,19 +27,19 @@ CREATE TABLE IF NOT EXISTS visitantes (
     cnh TEXT NOT NULL,
     modelo TEXT,
     cor TEXT,
-    entrada TEXT NOT NULL
+    entrada TEXT NOT NULL,
+    numero_vaga INTEGER NOT NULL
 );
 """
-# A coluna 'entrada' será salva como TEXT no formato ISO (ex: "2023-11-20 14:30:00")
 
-# --- Queries para Moradores (CRUD) ---
+# --- Queries para Moradores ---
 
 INSERT_MORADOR = """
 INSERT INTO moradores (nome, placa, cnh, modelo, cor, apartamento, vaga_id)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
-SELECT_ALL_MORADORES = "SELECT id, nome, placa, cnh, modelo, cor, apartamento, vaga_id FROM moradores;"
+SELECT_ALL_MORADORES = "SELECT id, nome, placa, cnh, modelo, cor, apartamento, vaga_id, estacionado FROM moradores;"
 
 UPDATE_MORADOR = """
 UPDATE moradores 
@@ -48,25 +48,22 @@ WHERE id=?;
 """
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
-
-# --- Queries para Moradores (Entrada/Saída) ---
-
 REGISTRAR_ENTRADA_MORADOR = "UPDATE moradores SET estacionado = 1 WHERE id = ?;"
 REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE id = ?;"
 
+# --- Queries para Visitantes ---
 
-# --- Queries para Visitantes (Entrada/Saída) ---
-
+# ALTERADO: incluir numero_vaga
 INSERT_VISITANTE = """
-INSERT INTO visitantes (nome, placa, cnh, modelo, cor, entrada)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO visitantes (nome, placa, cnh, modelo, cor, entrada, numero_vaga)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
-# Seleciona apenas quem está ativo (neste modelo simples, se está na tabela, está no estacionamento)
-SELECT_ALL_VISITANTES = "SELECT id, nome, placa, cnh, modelo, cor, entrada FROM visitantes;"
+# ALTERADO: incluir numero_vaga
+SELECT_ALL_VISITANTES = "SELECT id, nome, placa, cnh, modelo, cor, entrada, numero_vaga FROM visitantes;"
 
-# Quando o visitante sai, removemos o registro (ou poderíamos mover para uma tabela de histórico)
+# NOVA QUERY: Essencial para a alocação funcionar!
+SELECT_VAGAS_OCUPADAS = "SELECT numero_vaga FROM visitantes;"
+
 DELETE_VISITANTE = "DELETE FROM visitantes WHERE id=?;"
-
-# Query auxiliar para a "Catraca" (saber quantos visitantes estão dentro)
 COUNT_VISITANTES = "SELECT COUNT(*) FROM visitantes;"
