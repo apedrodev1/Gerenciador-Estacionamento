@@ -14,6 +14,7 @@ from src.functions.visitantes.registrar_entrada import registrar_entrada_visitan
 from src.functions.visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
 from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
+from src.functions.UI.exibir_mapa import exibir_mapa_estacionamento
 
 # Utilitários
 from src.utils.input_handler import get_valid_input, clear_screen
@@ -69,7 +70,8 @@ def main():
             print("\n1. 📥 Registrar Entrada (Visitante)")
             print("2. 📤 Registrar Saída (Visitante)")
             print("3. 📋 Listar Visitantes (Verificar Vencidos)")
-            print("4. 🏘️  Gerenciar Moradores")
+            print("4. 🗺️  Mapa Geral (Todos os Veículos)")
+            print("5. 🏘️  Gerenciar Moradores")
             print("0. ❌ Sair")
 
             opcao = input("\nEscolha uma opção: ").strip()
@@ -88,8 +90,11 @@ def main():
             elif opcao == '3':
                 # Lista e mostra o trigger visual de vencimento
                 listar_visitantes_ativos(estacionamento, repo)
-            
+
             elif opcao == '4':
+                exibir_mapa_estacionamento(repo)
+            
+            elif opcao == '5':
                 # Sub-menu de CRUD
                 menu_gerenciar_moradores(repo)
             
