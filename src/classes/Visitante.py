@@ -12,7 +12,7 @@ class Visitante(Veiculo):
     Além dos dados do veículo, armazena o momento da entrada para controle.
     """
 
-    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", entrada=None):
+    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", entrada=None, numero_vaga=None):
         super().__init__(id, nome, placa, cnh, modelo, cor)
         
         # Se nenhuma data for passada, assume-se "agora" (momento da criação do objeto)
