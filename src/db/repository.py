@@ -205,3 +205,34 @@ class EstacionamentoRepository:
             return cursor.fetchone()[0]
         except sqlite3.Error:
             return 0
+
+    
+    def listar_ocupacao_total(self):
+        """
+        Retorna uma lista unificada de todos os veículos no pátio.
+        Retorna: Lista de dicionários {'vaga', 'tipo', 'nome', 'placa', 'modelo', 'cor'}
+        """
+        cursor = self._get_cursor()
+        lista_unificada = []
+        try:
+            cursor.execute(queries.SELECT_OCUPACAO_TOTAL)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                vaga, tipo, nome, placa, modelo, cor = row
+                
+                # Criamos um dicionário simples para o relatório
+                veiculo_dict = {
+                    "vaga": vaga,
+                    "tipo": tipo,
+                    "nome": nome,
+                    "placa": placa,
+                    "modelo": modelo if modelo else "---",
+                    "cor": cor if cor else "---"
+                }
+                lista_unificada.append(veiculo_dict)
+            
+            return lista_unificada
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao gerar relatório geral: {e}")
+            return []
