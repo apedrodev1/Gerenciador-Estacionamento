@@ -18,9 +18,10 @@ class Morador(Veiculo):
 
         self.apartamento = apartamento
         self.vaga_id = vaga_id
+        self.estacionado = estacionado
 
 
-    # --- Apartamento (Novo) ---
+    # --- Apartamento ---
     @property
     def apartamento(self):
         return self._apartamento
@@ -50,9 +51,10 @@ class Morador(Veiculo):
 
 
     def to_dict(self):
-        """Sobrescreve to_dict para incluir a vaga."""
+        """Sobrescreve to_dict para incluir apartament e vaga."""
         data = super().to_dict() # Pega os dados do pai
         data['apartamento'] = self.apartamento
         data['vaga_id'] = self.vaga_id
+        data['estacionado'] = self.estacionado
 
         return data
