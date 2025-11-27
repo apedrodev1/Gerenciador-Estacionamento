@@ -76,11 +76,13 @@ class EstacionamentoRepository:
             
             for row in rows:
                 # Desempacota a tupla do banco
-                id_db, nome, placa, cnh, modelo, cor, apto, vaga = row
+                id_db, nome, placa, cnh, modelo, cor, apto, vaga, est_int = row
                 
+                estacionado_bool = bool(est_int)
+
                 # Instancia o objeto (Dumb Class)
                 m = Morador(id=id_db, nome=nome, placa=placa, cnh=cnh, 
-                            modelo=modelo, cor=cor, apartamento=apto, vaga_id=vaga)
+                            modelo=modelo, cor=cor, apartamento=apto, vaga_id=vaga,estacionado=estacionado_bool)
                 lista_moradores.append(m)
                 
             return lista_moradores
@@ -95,6 +97,28 @@ class EstacionamentoRepository:
         except sqlite3.Error as e:
             print(f"❌ Erro ao remover morador: {e}")
             raise
+
+
+    # --- CONTROLE DE ACESSO MORADORES (Novos Métodos) ---
+
+    def registrar_entrada_morador(self, morador_id):
+        """Atualiza o status para 'Dentro' (1)."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.REGISTRAR_ENTRADA_MORADOR, (morador_id,))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao registrar entrada de morador: {e}")
+            raise
+
+    def registrar_saida_morador(self, morador_id):
+        """Atualiza o status para 'Fora' (0)."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (morador_id,))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao registrar saída de morador: {e}")
+            raise
+
 
     # --- CRUD Visitantes (Entrada/Saída) ---
 
@@ -134,24 +158,40 @@ class EstacionamentoRepository:
             rows = cursor.fetchall()
             
             for row in rows:
-                id_db, nome, placa, cnh, modelo, cor, entrada_iso = row
+                id_db, nome, placa, cnh, modelo, cor, entrada_iso, num_vaga = row
                 
                 # Converte string ISO de volta para datetime
                 data_entrada = datetime.fromisoformat(entrada_iso)
                 
                 v = Visitante(id=id_db, nome=nome, placa=placa, cnh=cnh,
-                              modelo=modelo, cor=cor, entrada=data_entrada)
+                              modelo=modelo, cor=cor, entrada=data_entrada),
+                              numero_vaga=num_vaga
                 lista.append(v)
             return lista
         except sqlite3.Error as e:
             print(f"❌ Erro ao listar visitantes: {e}")
             return []
 
+    def buscar_vagas_ocupadas_visitantes(self):
+        """
+        Retorna uma lista de inteiros representando as vagas ocupadas.
+        Usado pela lógica de alocação (1-50).
+        """
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_VAGAS_OCUPADAS)
+            # A query retorna tuplas (vaga,), precisamos extrair o int
+            rows = cursor.fetchall()
+            vagas = [row[0] for row in rows] 
+            return vagas
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao buscar vagas ocupadas: {e}")
+            return []
+
     def contar_visitantes_ativos(self):
-        """Usado para hidratar a 'Catraca' (Classe Estacionamento)."""
         cursor = self._get_cursor()
         try:
             cursor.execute(queries.COUNT_VISITANTES)
-            return cursor.fetchone()[0] # Retorna o número inteiro (COUNT)
+            return cursor.fetchone()[0]
         except sqlite3.Error:
             return 0
