@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS moradores (
 );
 """
 
-# ADICIONADO: numero_vaga
 CREATE_TABLE_VISITANTES = """
 CREATE TABLE IF NOT EXISTS visitantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,17 +52,26 @@ REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE id = ?;"
 
 # --- Queries para Visitantes ---
 
-# ALTERADO: incluir numero_vaga
 INSERT_VISITANTE = """
 INSERT INTO visitantes (nome, placa, cnh, modelo, cor, entrada, numero_vaga)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
-# ALTERADO: incluir numero_vaga
 SELECT_ALL_VISITANTES = "SELECT id, nome, placa, cnh, modelo, cor, entrada, numero_vaga FROM visitantes;"
 
-# NOVA QUERY: Essencial para a alocação funcionar!
 SELECT_VAGAS_OCUPADAS = "SELECT numero_vaga FROM visitantes;"
 
 DELETE_VISITANTE = "DELETE FROM visitantes WHERE id=?;"
 COUNT_VISITANTES = "SELECT COUNT(*) FROM visitantes;"
+
+
+# Seleciona Visitantes E Moradores (apenas os estacionados)
+SELECT_OCUPACAO_TOTAL = """
+SELECT numero_vaga as vaga, 'Visitante' as tipo, nome, placa, modelo, cor 
+FROM visitantes
+UNION ALL
+SELECT vaga_id as vaga, 'Morador' as tipo, nome, placa, modelo, cor 
+FROM moradores 
+WHERE estacionado = 1
+ORDER BY vaga ASC;
+"""
