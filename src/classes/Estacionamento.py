@@ -52,6 +52,36 @@ class Estacionamento:
         """A Catraca: Retorna True se pode entrar."""
         return not self.esta_lotado
 
+
+    # --- Lógica de Alocação de Vagas (O Cérebro da Vaga) ---
+
+    def alocar_vaga_visitante(self, vagas_ocupadas_ids):
+        """
+        Descobre qual a próxima vaga livre para um visitante.
+        
+        Args:
+            vagas_ocupadas_ids (list[int]): Lista de números das vagas já ocupadas (ex: [1, 2, 5]).
+            
+        Returns:
+            int: O número da vaga livre (ex: 3).
+            None: Se não houver vaga (redundância de segurança).
+        """
+        # Cria um conjunto com todas as vagas possíveis (ex: {1, 2, ..., 50})
+        todas_vagas = set(range(1, self._capacidade_total + 1))
+        
+        # Cria um conjunto com as ocupadas para facilitar a subtração matemática
+        ocupadas = set(vagas_ocupadas_ids)
+        
+        # Subtrai os conjuntos: sobram apenas as livres
+        livres = list(todas_vagas - ocupadas)
+        
+        if not livres:
+            return None # Lotado real
+            
+        # Ordena para pegar sempre a menor vaga disponível (ex: preencher buracos 1, 2, [3], 4...)
+        return min(livres)
+
+
     # --- Lógica de Tempo (O Trigger Lógico) ---
 
     def calcular_tempo_permanencia(self, visitante):
