@@ -11,7 +11,7 @@ class Morador(Veiculo):
     Herda todos os atributos de veículo e adiciona a Vaga vinculada e Apartamento.
     """
 
-    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", apartamento="", vaga_id=None):
+    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", apartamento="", vaga_id=None, estacionado=False):
         # Chama o construtor do Pai (Veiculo) para lidar com a parte "comum"
         super().__init__(id, nome, placa, cnh, modelo, cor)
         
