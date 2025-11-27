@@ -2,36 +2,49 @@ from src.classes.Morador import Morador
 from src.utils.input_handler import get_valid_input, clear_screen
 from src.utils.validations import validate_names, validate_placa, validate_cnh, validate_apartamento, validate_yes_no
 
-# --- FUNÇÃO AUXILIAR (O SELETOR) ---
+# --- FUNÇÕES AUXILIARES (UI) ---
 
-def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
+def _renderizar_tabela(moradores):
     """
-    Exibe a lista de moradores e pede para o usuário digitar um ID.
-    Retorna: O objeto Morador selecionado ou None (se cancelar/lista vazia).
+    Apenas desenha a tabela na tela. 
+    Não pede input e não limpa a tela (para ser flexível).
+    Retorna uma lista com os IDs válidos exibidos.
     """
-    clear_screen()
-    moradores = repositorio.listar_moradores()
-
-    print(f"\n--- 📋 {acao_titulo} MORADOR ---")
-    
     if not moradores:
-        print("\n❌ Nenhum morador cadastrado para selecionar.")
-        input("\nPressione Enter para voltar...")
-        return None
+        print("\n❌ Nenhum morador cadastrado.")
+        return []
 
     # Cabeçalho da Tabela
     print(f"{'ID':<4} {'NOME':<20} {'APTO':<8} {'PLACA':<10} {'VAGA'}")
     print("-" * 60)
 
-    # Exibe as linhas
     ids_validos = []
     for m in moradores:
         ids_validos.append(m.id)
         vaga_info = m.vaga_id if m.vaga_id else "---"
         print(f"{m.id:<4} {m.nome:<20} {m.apartamento:<8} {m.placa:<10} {vaga_info}")
     print("-" * 60)
+    
+    return ids_validos
 
-    # Loop de Seleção
+def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
+    """
+    Fluxo completo: Limpa tela -> Mostra Tabela -> Pede ID.
+    Retorna o Objeto ou None.
+    """
+    clear_screen()
+    moradores = repositorio.listar_moradores()
+
+    print(f"\n--- 📋 {acao_titulo} MORADOR ---")
+    
+    # Usa a função auxiliar para desenhar (DRY)
+    ids_validos = _renderizar_tabela(moradores)
+    
+    if not ids_validos:
+        input("\nPressione Enter para voltar...")
+        return None
+
+    # Loop de Seleção (Só acontece se tiver moradores)
     while True:
         id_str = input("\nDigite o ID do morador (ou 0 para cancelar): ").strip()
 
@@ -45,7 +58,6 @@ def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
         id_escolhido = int(id_str)
 
         if id_escolhido in ids_validos:
-            # Retorna o objeto morador correspondente ao ID
             return next(m for m in moradores if m.id == id_escolhido)
         else:
             print("❌ ID não encontrado na lista acima. Tente novamente.")
@@ -81,21 +93,20 @@ def adicionar_morador_form(repositorio):
     try:
         repositorio.adicionar_morador(novo_morador)
         print(f"\n✅ Morador {nome} (Apto {apto}) cadastrado com sucesso!")
-        input("\nPressione Enter para continuar...")
     except Exception as e:
         print(f"\n❌ Erro ao salvar: {e}")
-        input("\nPressione Enter para continuar...")
+    
+    input("\nPressione Enter para continuar...")
 
 def remover_morador_form(repositorio):
-    """Remove um morador usando o seletor visual e confirmação detalhada."""
+    """Remove um morador usando o seletor visual."""
     
-    # 1. Usa o seletor para pegar o objeto (já trata lista vazia e ID inválido)
+    # Usa o seletor (que já tem a lógica de input de ID)
     morador_alvo = _selecionar_morador_da_lista(repositorio, acao_titulo="REMOVER")
     
     if not morador_alvo:
-        return # Usuário cancelou ou lista vazia
+        return 
 
-    # 2. Exibe o alerta detalhado (Sua solicitação)
     print("\n" + "!"*40)
     print(f"⚠️  ATENÇÃO: Você selecionou:")
     print(f"   Nome: {morador_alvo.nome}")
@@ -103,7 +114,6 @@ def remover_morador_form(repositorio):
     print(f"   Placa: {morador_alvo.placa}")
     print("!"*40)
 
-    # 3. Confirmação Final
     confirmar, _ = get_valid_input(f"\nDeseja MESMO remover este morador? (s/n): ", validate_yes_no)
 
     if confirmar == 's':
@@ -127,19 +137,26 @@ def menu_gerenciar_moradores(repositorio):
         print("1. Adicionar Morador")
         print("2. Remover Morador")
         print("3. Listar Moradores (Visualizar)")
-        print("0. Voltar ao Menu Principal")
+        print("0. Voltar ao Menu Principal (ou pressione Enter)") # UX Melhorada
         
         opcao = input("\nEscolha: ").strip()
         
         if opcao == '1':
             adicionar_morador_form(repositorio)
+        
         elif opcao == '2':
             remover_morador_form(repositorio)
+        
         elif opcao == '3':
-            # Reutiliza o seletor apenas para visualização
-            _selecionar_morador_da_lista(repositorio, acao_titulo="VISUALIZAR")
-        elif opcao == '0':
+            clear_screen()
+            print("\n--- 📋 LISTA DE MORADORES ---")
+            moradores = repositorio.listar_moradores()
+            _renderizar_tabela(moradores)
+            input("\nPressione Enter para voltar...")
+        
+        elif opcao == '0' or opcao == '': 
             break
+        
         else:
             print("❌ Opção inválida.")
-            input("Enter...")
+            
