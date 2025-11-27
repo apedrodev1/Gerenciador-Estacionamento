@@ -17,6 +17,7 @@ class Visitante(Veiculo):
         
         # Se nenhuma data for passada, assume-se "agora" (momento da criação do objeto)
         self._entrada = entrada if entrada else datetime.now()
+        self.numero_vaga = numero_vaga
 
     @property
     def entrada(self):
@@ -27,5 +28,6 @@ class Visitante(Veiculo):
 
     def to_dict(self):
         data = super().to_dict()
-        data['entrada'] = self.entrada.isoformat() # Formato string para salvar em JSON/DB
+        data['entrada'] = self.entrada.isoformat() 
+        data['numero_vaga'] = self.numero_vaga
         return data
