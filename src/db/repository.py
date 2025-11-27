@@ -134,7 +134,8 @@ class EstacionamentoRepository:
                 visitante.cnh,
                 visitante.modelo,
                 visitante.cor,
-                data_iso
+                data_iso,
+                visitante.numero_vaga
             ))
         except sqlite3.Error as e:
             print(f"❌ Erro ao registrar entrada: {e}")
@@ -158,19 +159,28 @@ class EstacionamentoRepository:
             rows = cursor.fetchall()
             
             for row in rows:
+                # Agora recuperamos numero_vaga
                 id_db, nome, placa, cnh, modelo, cor, entrada_iso, num_vaga = row
                 
-                # Converte string ISO de volta para datetime
                 data_entrada = datetime.fromisoformat(entrada_iso)
                 
-                v = Visitante(id=id_db, nome=nome, placa=placa, cnh=cnh,
-                              modelo=modelo, cor=cor, entrada=data_entrada),
-                              numero_vaga=num_vaga
+                # CORREÇÃO: Removida a vírgula extra e movido o parêntese para o final
+                v = Visitante(
+                    id=id_db, 
+                    nome=nome, 
+                    placa=placa, 
+                    cnh=cnh,
+                    modelo=modelo, 
+                    cor=cor, 
+                    entrada=data_entrada,
+                    numero_vaga=num_vaga 
+                )
                 lista.append(v)
             return lista
         except sqlite3.Error as e:
             print(f"❌ Erro ao listar visitantes: {e}")
             return []
+
 
     def buscar_vagas_ocupadas_visitantes(self):
         """
