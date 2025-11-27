@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS moradores (
     cor TEXT,
     apartamento TEXT NOT NULL,
     vaga_id INTEGER
+    estacionado INTEGER DEFAULT 0  -- 0: Fora, 1: Dentro
 );
 """
 
@@ -47,6 +48,12 @@ WHERE id=?;
 """
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
+
+# --- Queries para Moradores (Entrada/Saída) ---
+
+REGISTRAR_ENTRADA_MORADOR = "UPDATE moradores SET estacionado = 1 WHERE id = ?;"
+REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE id = ?;"
+
 
 # --- Queries para Visitantes (Entrada/Saída) ---
 
