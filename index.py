@@ -23,8 +23,6 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
-    print("🚗 Bem-vindo ao Sistema de Estacionamento OOP 🚗\n")
-
     # 1. Configuração do Banco de Dados
     # Definimos um caminho padrão para o arquivo .db
     db_path = os.path.join("src", "db", "estacionamento.db")
@@ -54,7 +52,7 @@ def main():
             clear_screen()
 
             total_visitantes = repo.contar_visitantes_ativos()
-            estacionamento.ocupacao_atual = total_visitantes
+            estacionamento.ocupacao_atual = total_visitantes # será corrigido após nova implementação de alocação de vagas ocupação_atual = total_visitantes + total_visitantes
 
             # --- DISPLAY DO STATUS ---
             print("\n" + "="*40)
@@ -90,16 +88,13 @@ def main():
             elif opcao == '3':
                 # Lista e mostra o trigger visual de vencimento
                 listar_visitantes_ativos(estacionamento, repo)
-                input("\nPressione Enter para voltar...")
             
             elif opcao == '4':
                 # Sub-menu de CRUD
                 menu_gerenciar_moradores(repo)
             
             elif opcao == '0':
-                # Confirmação de saída
-                sair, _ = get_valid_input("Deseja realmente sair? (s/n): ", validate_yes_no)
-                if sair == 's':
+                # Confirma saída
                     print("\n👋 Sistema encerrado. Até logo!")
                     break
             
