@@ -10,10 +10,17 @@ from src.db.repository import EstacionamentoRepository
 from src.classes.Estacionamento import Estacionamento
 
 # Importando as funções de interface (Menus)
+# Moradores
+from src.functions.moradores.catraca_moradores.entrada_morador import registrar_entrada_morador
+from src.functions.moradores.catraca_moradores.saida_morador import registrar_saida_morador
+from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
+
+# Visitantes
 from src.functions.visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
-from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
+
+# Geral
 from src.functions.UI.exibir_mapa import exibir_mapa_estacionamento
 
 # Utilitários
@@ -67,37 +74,38 @@ def main():
             print("="*40)
 
             # --- MENU ---
-            print("\n1. 📥 Registrar Entrada (Visitante)")
-            print("2. 📤 Registrar Saída (Visitante)")
-            print("3. 📋 Listar Visitantes (Verificar Vencidos)")
-            print("4. 🗺️  Mapa Geral (Todos os Veículos)")
-            print("5. 🏘️  Gerenciar Moradores")
+            print("\n--- 🚗 VISITANTES ---")
+            print("1. 📥 Registrar Entrada")
+            print("2. 📤 Registrar Saída")
+            print("3. 📋 Listar (Verificar Vencidos)")
+            
+            print("\n--- 🏡 MORADORES ---")
+            print("4. 📥 Registrar Entrada")  
+            print("5. 📤 Registrar Saída")    
+            print("6. 🏘️  Gerenciar Cadastro") 
+            
+            print("\n--- ⚙️  SISTEMA ---")
+            print("7. 🗺️  Mapa Geral (Ocupação)") 
             print("0. ❌ Sair")
 
             opcao = input("\nEscolha uma opção: ").strip()
 
-            # --- ROTEAMENTO ---
             if opcao == '1':
-                # Passamos o objeto 'estacionamento' para validar a lotação
-                # e o 'repo' para salvar se estiver tudo ok.
                 registrar_entrada_visitante(estacionamento, repo)
-            
             elif opcao == '2':
-                # Passamos 'estacionamento' para calcular o tempo/preço
-                # e 'repo' para dar baixa.
                 registrar_saida_visitante(estacionamento, repo)
-            
             elif opcao == '3':
-                # Lista e mostra o trigger visual de vencimento
                 listar_visitantes_ativos(estacionamento, repo)
-
             elif opcao == '4':
+                registrar_entrada_morador(repo)
+            elif opcao == '5':
+                registrar_saida_morador(repo)
+            elif opcao == '6':
+                menu_gerenciar_moradores(repo, estacionamento)
+            elif opcao == '7':
                 exibir_mapa_estacionamento(repo)
             
-            elif opcao == '5':
-                # Sub-menu de CRUD
-                menu_gerenciar_moradores(repo)
-            
+
             elif opcao == '0':
                 # Confirma saída
                     print("\n👋 Sistema encerrado. Até logo!")
