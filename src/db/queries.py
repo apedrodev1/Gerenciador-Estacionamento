@@ -66,6 +66,7 @@ COUNT_VISITANTES = "SELECT COUNT(*) FROM visitantes;"
 
 
 # Seleciona Visitantes E Moradores (apenas os estacionados)
+
 SELECT_OCUPACAO_TOTAL = """
 SELECT numero_vaga as vaga, 'Visitante' as tipo, nome, placa, modelo, cor 
 FROM visitantes
