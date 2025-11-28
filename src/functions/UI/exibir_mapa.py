@@ -1,4 +1,4 @@
-from src.utils.input_handler import clear_screen
+from ...utils.input_handler import clear_screen
 from rich.console import Console
 from rich.table import Table
 from rich import box
