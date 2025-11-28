@@ -144,6 +144,89 @@ def remover_morador_form(repositorio):
     
     input("\nPressione Enter para continuar...")
 
+def editar_morador_form(repositorio, estacionamento):
+    """Formulário para editar dados de um morador existente."""
+    
+    # 1. Seleciona o morador usando o seletor visual
+    morador = _selecionar_morador_da_lista(repositorio, acao_titulo="EDITAR")
+    
+    if not morador:
+        return
+
+    while True:
+        clear_screen()
+        print(f"\n--- 📝 EDITANDO: {morador.nome} ---")
+        print(f"1. Nome: {morador.nome}")
+        print(f"2. Apartamento: {morador.apartamento}")
+        print(f"3. Placa: {morador.placa}")
+        print(f"4. CNH: {morador.cnh}")
+        print(f"5. Modelo: {morador.modelo}")
+        print(f"6. Cor: {morador.cor}")
+        vaga_display = morador.vaga_id if morador.vaga_id else "Sem Vaga"
+        print(f"7. Vaga Fixa: {vaga_display}")
+        print("-" * 30)
+        print("0. 💾 SALVAR E SAIR")
+        
+        opcao = input("\nO que deseja alterar? ").strip()
+
+        if opcao == '0':
+            try:
+                repositorio.atualizar_morador(morador)
+                print("\n✅ Alterações salvas com sucesso!")
+            except Exception as e:
+                print(f"\n❌ Erro ao salvar alterações: {e}")
+            input("Pressione Enter para continuar...")
+            break
+
+        # --- EDIÇÃO DOS CAMPOS ---
+        elif opcao == '1':
+            novo_nome, _ = get_valid_input(f"Novo Nome ({morador.nome}): ", validate_names)
+            morador.nome = novo_nome
+            
+        elif opcao == '2':
+            novo_apto, _ = get_valid_input(f"Novo Apto ({morador.apartamento}): ", validate_apartamento)
+            morador.apartamento = novo_apto
+            
+        elif opcao == '3':
+            nova_placa, _ = get_valid_input(f"Nova Placa ({morador.placa}): ", validate_placa)
+            morador.placa = nova_placa
+            
+        elif opcao == '4':
+            nova_cnh, _ = get_valid_input(f"Nova CNH ({morador.cnh}): ", validate_cnh)
+            morador.cnh = nova_cnh
+            
+        elif opcao == '5':
+            morador.modelo = input(f"Novo Modelo ({morador.modelo}): ")
+            
+        elif opcao == '6':
+            morador.cor = input(f"Nova Cor ({morador.cor}): ")
+            
+        elif opcao == '7':
+            # Validação de Zona (Regra de Negócio)
+            while True:
+                vaga_str = input(f"Nova Vaga (Atual: {vaga_display} | Min: {estacionamento.capacidade_total + 1}): ")
+                
+                if not vaga_str: 
+                    morador.vaga_id = None
+                    break
+                
+                if not vaga_str.isdigit():
+                    print("❌ Digite apenas números.")
+                    continue
+                
+                nova_vaga = int(vaga_str)
+                valido, msg = estacionamento.validar_atribuicao_vaga_morador(nova_vaga)
+                
+                if valido:
+                    morador.vaga_id = nova_vaga
+                    break
+                else:
+                    print(f"❌ {msg}")
+        
+        else:
+            print("❌ Opção inválida.")
+
+
 # --- MENU PRINCIPAL ---
 
 def menu_gerenciar_moradores(repositorio, estacionamento):
@@ -152,9 +235,10 @@ def menu_gerenciar_moradores(repositorio, estacionamento):
         clear_screen()
         print("\n--- 🏘️  GESTÃO DE MORADORES ---")
         print("1. Adicionar Morador")
-        print("2. Remover Morador")
-        print("3. Listar Moradores (Visualizar)")
-        print("0. Voltar ao Menu Principal (ou pressione Enter)") # UX Melhorada
+        print("2. Editar Morador")   # <--- Nova Opção
+        print("3. Remover Morador")
+        print("4. Listar Moradores (Visualizar)")
+        print("0. Voltar ao Menu Principal (ou Enter)")
         
         opcao = input("\nEscolha: ").strip()
         
@@ -162,9 +246,12 @@ def menu_gerenciar_moradores(repositorio, estacionamento):
             adicionar_morador_form(repositorio, estacionamento)
         
         elif opcao == '2':
+            editar_morador_form(repositorio, estacionamento) # <--- Chamada
+            
+        elif opcao == '3':
             remover_morador_form(repositorio)
         
-        elif opcao == '3':
+        elif opcao == '4':
             clear_screen()
             print("\n--- 📋 LISTA DE MORADORES ---")
             moradores = repositorio.listar_moradores()
@@ -176,4 +263,4 @@ def menu_gerenciar_moradores(repositorio, estacionamento):
         
         else:
             print("❌ Opção inválida.")
-            
+            input("Pressione Enter...")
