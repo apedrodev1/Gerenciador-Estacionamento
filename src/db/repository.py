@@ -98,8 +98,25 @@ class EstacionamentoRepository:
             print(f"❌ Erro ao remover morador: {e}")
             raise
 
+    def atualizar_morador(self, morador: Morador):
+        """Atualiza todos os dados do morador no banco."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.UPDATE_MORADOR, (
+                morador.nome,
+                morador.placa,
+                morador.cnh,
+                morador.modelo,
+                morador.cor,
+                morador.apartamento,
+                morador.vaga_id,
+                morador.id # O ID vai no WHERE
+            ))
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao atualizar morador: {e}")
+            raise
 
-    # --- CONTROLE DE ACESSO MORADORES (Novos Métodos) ---
+    # --- CONTROLE DE ACESSO MORADORES ---
 
     def registrar_entrada_morador(self, morador_id):
         """Atualiza o status para 'Dentro' (1)."""
