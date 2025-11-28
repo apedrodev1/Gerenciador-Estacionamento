@@ -64,7 +64,7 @@ def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
 
 # --- FORMULÁRIOS ---
 
-def adicionar_morador_form(repositorio):
+def adicionar_morador_form(repositorio, estacionamento):
     """Formulário para criar um novo morador."""
     clear_screen()
     print("\n--- 🆕 NOVO MORADOR ---")
@@ -77,8 +77,25 @@ def adicionar_morador_form(repositorio):
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
     
-    vaga_str = input("Número da Vaga Fixa (ou Enter para sem vaga): ")
-    vaga_id = int(vaga_str) if vaga_str.isdigit() else None
+    while True:
+        vaga_str = input(f"Número da Vaga Fixa (Acima de {estacionamento.capacidade_total} ou Enter para sem vaga): ")
+        
+        if not vaga_str: # Vazio = Sem vaga
+            vaga_id = None
+            break
+            
+        if not vaga_str.isdigit():
+            print("❌ Digite apenas números.")
+            continue
+            
+        vaga_id = int(vaga_str)
+
+        valido, msg_erro = estacionamento.validar_atribuicao_vaga_morador(vaga_id)
+        
+        if valido:
+            break
+        else:
+            print(f"❌ {msg_erro}")
 
     novo_morador = Morador(
         nome=nome,
@@ -129,7 +146,7 @@ def remover_morador_form(repositorio):
 
 # --- MENU PRINCIPAL ---
 
-def menu_gerenciar_moradores(repositorio):
+def menu_gerenciar_moradores(repositorio, estacionamento):
     """Menu Principal de Moradores."""
     while True:
         clear_screen()
@@ -142,7 +159,7 @@ def menu_gerenciar_moradores(repositorio):
         opcao = input("\nEscolha: ").strip()
         
         if opcao == '1':
-            adicionar_morador_form(repositorio)
+            adicionar_morador_form(repositorio, estacionamento)
         
         elif opcao == '2':
             remover_morador_form(repositorio)
