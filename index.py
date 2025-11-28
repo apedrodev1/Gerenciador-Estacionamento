@@ -50,7 +50,7 @@ def main():
         tempo_limite_minutos=0
     )
 
-    # 3. Loop Principal (Context Manager garante fechamento da conexão)
+    # 3. Loop Principal (Context Manager garante fechamento da conexão) 
     with repo:
         while True:
             # --- HIDRATAÇÃO ---
