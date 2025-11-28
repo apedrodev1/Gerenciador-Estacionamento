@@ -47,7 +47,7 @@ def main():
     estacionamento = Estacionamento(
         nome="Condomínio Solar", 
         capacidade_total=50, 
-        tempo_limite_minutos=0
+        tempo_limite_minutos=120
     )
 
     # 3. Loop Principal (Context Manager garante fechamento da conexão) 
