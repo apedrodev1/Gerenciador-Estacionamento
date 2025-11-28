@@ -5,19 +5,22 @@ from datetime import datetime
 
 class Estacionamento:
     """
-    Representa as regras do estacionamento.
+    Representa as regras do estacionamento (O 'Cérebro').
+    Gerencia a alocação dinâmica para visitantes e valida regras de tempo e zoneamento.
     """
 
     def __init__(self, nome="Condomínio POO", capacidade_total=50, tempo_limite_minutos=120):
         """
         Args:
-            tempo_limite_minutos (int): Tempo máximo em minutos antes do ticket vencer (Padrão: 2 horas).
+            nome (str): Nome do estabelecimento.
+            capacidade_total (int): Total de vagas ROTATIVAS (para visitantes).
+            tempo_limite_minutos (int): Tempo máximo em minutos antes do ticket vencer.
         """
         self._nome = nome
         self._capacidade_total = capacidade_total
         self._tempo_limite_minutos = tempo_limite_minutos
         
-        # Hidratado pelo Repositório
+        # Hidratado pelo Repositório a cada loop
         self._ocupacao_atual = 0 
 
     # --- Properties ---
@@ -46,63 +49,55 @@ class Estacionamento:
     def esta_lotado(self):
         return self._ocupacao_atual >= self._capacidade_total
 
-    # --- Lógica de Entrada ---
+    # --- Lógica de Entrada (Visitantes) ---
 
-    def verificar_entrada(self):
-        """A Catraca: Retorna True se pode entrar."""
+    def verificar_entrada_visitante(self):
+        """Verificação rápida de lotação para visitantes."""
         return not self.esta_lotado
-
-
-    # --- Lógica de Alocação de Vagas (O Cérebro da Vaga) ---
 
     def alocar_vaga_visitante(self, vagas_ocupadas_ids):
         """
-        Descobre qual a próxima vaga livre para um visitante.
-        
-        Args:
-            vagas_ocupadas_ids (list[int]): Lista de números das vagas já ocupadas (ex: [1, 2, 5]).
-            
-        Returns:
-            int: O número da vaga livre (ex: 3).
-            None: Se não houver vaga (redundância de segurança).
+        O Cérebro da Alocação: Descobre a próxima vaga livre (1 a 50).
+        Retorna: int (vaga livre) ou None (lotado).
         """
-        # Cria um conjunto com todas as vagas possíveis (ex: {1, 2, ..., 50})
         todas_vagas = set(range(1, self._capacidade_total + 1))
-        
-        # Cria um conjunto com as ocupadas para facilitar a subtração matemática
         ocupadas = set(vagas_ocupadas_ids)
-        
-        # Subtrai os conjuntos: sobram apenas as livres
         livres = list(todas_vagas - ocupadas)
         
         if not livres:
-            return None # Lotado real
+            return None 
             
-        # Ordena para pegar sempre a menor vaga disponível (ex: preencher buracos 1, 2, [3], 4...)
         return min(livres)
 
+    # --- Lógica de Zoneamento (Moradores) ---
+    # ESTES SÃO OS MÉTODOS QUE FALTAVAM:
 
-    # --- Lógica de Tempo (O Trigger Lógico) ---
+    def vaga_pertence_a_visitantes(self, numero_vaga):
+        """Verifica se o número da vaga cai na zona de rotativos (1 a Capacidade)."""
+        return 1 <= numero_vaga <= self._capacidade_total
+
+    def validar_atribuicao_vaga_morador(self, numero_vaga):
+        """
+        Impede que um morador receba uma vaga destinada a visitantes.
+        Retorna: (Bool, Mensagem de Erro)
+        """
+        if numero_vaga is None:
+            return True, None # Morador sem vaga (apenas cadastro) é permitido
+
+        if self.vaga_pertence_a_visitantes(numero_vaga):
+            return False, f"A vaga {numero_vaga} pertence à ZONA DE VISITANTES (1-{self._capacidade_total}). Escolha uma vaga acima de {self._capacidade_total}."
+        
+        return True, None
+
+    # --- Lógica de Tempo (Trigger) ---
 
     def calcular_tempo_permanencia(self, visitante):
-        """
-        Calcula quantos minutos o visitante está no local.
-        Args:
-            visitante (Visitante): Objeto hidratado com data de entrada.
-        Returns:
-            float: Minutos passados.
-        """
         if not visitante.entrada:
             return 0.0
-            
         agora = datetime.now()
-        # visitante.entrada é um objeto datetime (convertido pelo Repository)
         delta = agora - visitante.entrada
         return delta.total_seconds() / 60
 
     def verificar_ticket_vencido(self, visitante):
-        """
-        Retorna True se o tempo limite foi excedido.
-        """
         minutos = self.calcular_tempo_permanencia(visitante)
         return minutos > self._tempo_limite_minutos
