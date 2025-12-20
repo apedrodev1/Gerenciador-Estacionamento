@@ -1,29 +1,24 @@
 """
 Ponto de entrada principal para o Sistema de Gestão de Estacionamento.
-
-Este script inicializa a aplicação, conecta ao banco de dados via Repositório,
-hidrata a classe de lógica (Estacionamento) e gerencia o loop principal de interação.
 """
 
 import os
+from dotenv import load_dotenv # 1. Importar biblioteca
+
+# 2. Carregar as variáveis do arquivo .env para a memória
+load_dotenv()
+
 from src.db.repository import EstacionamentoRepository
 from src.classes.Estacionamento import Estacionamento
 
 # Importando as funções de interface (Menus)
-# Moradores
 from src.functions.moradores.catraca_moradores.entrada_morador import registrar_entrada_morador
 from src.functions.moradores.catraca_moradores.saida_morador import registrar_saida_morador
 from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
-
-# Visitantes
 from src.functions.visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
-
-# Geral
 from src.functions.UI.exibir_mapa import exibir_mapa_estacionamento
-
-# Utilitários
 from src.utils.input_handler import get_valid_input, clear_screen
 from src.utils.validations import validate_yes_no
 
@@ -31,36 +26,40 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
-    # 1. Configuração do Banco de Dados
-    # Definimos um caminho padrão para o arquivo .db
-    db_path = os.path.join("src", "db", "estacionamento.db")
+    # 1. Configuração do Banco de Dados via .env
+    # Pegamos apenas o nome do arquivo do .env e montamos o caminho
+    db_filename = os.getenv("DB_FILENAME", "estacionamento.db") 
+    db_path = os.path.join("src", "db", db_filename)
     
     try:
-        # Inicializa o repositório (cria tabelas se não existirem)
         repo = EstacionamentoRepository(db_path)
     except Exception as e:
         print(f"❌ Erro crítico ao conectar ao banco de dados: {e}")
         return
 
-    # 2. Inicializa a Lógica (O 'Cérebro')
-    # Definimos regras aqui: Lotação 50, Tempo Limite 2h (120 min)
+    # 2. Inicializa a Lógica via .env
+    # ATENÇÃO: É obrigatório converter para int() pois o .env retorna string
+    try:
+        capacidade = int(os.getenv("TOTAL_CAPACITY", 50))
+        tempo_limite = int(os.getenv("TIME_LIMIT_MINUTES", 120))
+        nome_estacionamento = os.getenv("PARKING_NAME", "Estacionamento Genérico")
+    except ValueError:
+        print("❌ Erro no arquivo .env: Capacidade e Tempo devem ser números inteiros.")
+        return
+
     estacionamento = Estacionamento(
-        nome="Condomínio Solar", 
-        capacidade_total=50, 
-        tempo_limite_minutos=120
+        nome=nome_estacionamento, 
+        capacidade_total=capacidade, 
+        tempo_limite_minutos=tempo_limite
     )
 
-    # 3. Loop Principal (Context Manager garante fechamento da conexão) 
+    # 3. Loop Principal
     with repo:
         while True:
-            # --- HIDRATAÇÃO ---
-            # A cada loop, perguntamos ao banco quantos visitantes estão ativos
-            # para manter a 'catraca' do objeto Estacionamento atualizada.
-
             clear_screen()
 
             total_visitantes = repo.contar_visitantes_ativos()
-            estacionamento.ocupacao_atual = total_visitantes # será corrigido após nova implementação de alocação de vagas ocupação_atual = total_visitantes + total_visitantes
+            estacionamento.ocupacao_atual = total_visitantes 
 
             # --- DISPLAY DO STATUS ---
             print("\n" + "="*40)
@@ -105,11 +104,9 @@ def main():
             elif opcao == '7':
                 exibir_mapa_estacionamento(repo)
             
-
             elif opcao == '0':
-                # Confirma saída
-                    print("\n👋 Sistema encerrado. Até logo!")
-                    break
+                print("\n👋 Sistema encerrado. Até logo!")
+                break
             
             else:
                 print("❌ Opção inválida.")
