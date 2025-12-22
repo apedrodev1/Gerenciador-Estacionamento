@@ -67,6 +67,7 @@ def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
 def adicionar_morador_form(repositorio, estacionamento):
     """Formulário para criar um novo morador."""
     clear_screen()
+    apto, _ = get_valid_input("Apartamento (ex: 101, 204): ", validate_apartamento)
     print("\n--- 🆕 NOVO MORADOR ---")
     
     nome, _ = get_valid_input("Nome: ", validate_names)
@@ -76,6 +77,23 @@ def adicionar_morador_form(repositorio, estacionamento):
     
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
+
+    while True:
+        print(f"ℹ️  Vagas disponíveis para o apto {apto}: {apto}-1 ou {apto}-2")
+        vaga_str = input("Qual vaga deseja ocupar? (ou Enter para nenhuma): ").strip()
+        
+        if not vaga_str:
+            vaga_id = None
+            break
+            
+        # O Cérebro valida se a vaga bate com o apto
+        valido, msg_erro = estacionamento.validar_atribuicao_vaga_morador(apto, vaga_str)
+        
+        if valido:
+            vaga_id = vaga_str.upper()
+            break
+        else:
+            print(f"❌ {msg_erro}")
     
     while True:
         vaga_str = input(f"Número da Vaga Fixa (Acima de {estacionamento.capacidade_total} ou Enter para sem vaga): ")
