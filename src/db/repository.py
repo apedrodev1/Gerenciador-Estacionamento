@@ -200,19 +200,16 @@ class EstacionamentoRepository:
 
 
     def buscar_vagas_ocupadas_visitantes(self):
-        """
-        Retorna uma lista de inteiros representando as vagas ocupadas.
-        Usado pela lógica de alocação (1-50).
-        """
+        """Retorna lista de STRINGS das vagas ocupadas."""
         cursor = self._get_cursor()
         try:
             cursor.execute(queries.SELECT_VAGAS_OCUPADAS)
-            # A query retorna tuplas (vaga,), precisamos extrair o int
             rows = cursor.fetchall()
-            vagas = [row[0] for row in rows] 
+            # Garante que seja string (caso o banco tenha salvo algo estranho)
+            vagas = [str(row[0]) for row in rows] 
             return vagas
         except sqlite3.Error as e:
-            print(f"❌ Erro ao buscar vagas ocupadas: {e}")
+            print(f"❌ Erro ao buscar vagas: {e}")
             return []
 
     def contar_visitantes_ativos(self):
