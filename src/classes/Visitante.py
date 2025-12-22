@@ -14,10 +14,8 @@ class Visitante(Veiculo):
 
     def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", entrada=None, numero_vaga=None):
         super().__init__(id, nome, placa, cnh, modelo, cor)
-        
-        # Se nenhuma data for passada, assume-se "agora" (momento da criação do objeto)
         self._entrada = entrada if entrada else datetime.now()
-        self.numero_vaga = numero_vaga
+        self.numero_vaga = str(numero_vaga) if numero_vaga else None
 
     @property
     def entrada(self):
