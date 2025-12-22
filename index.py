@@ -46,7 +46,7 @@ def main():
     # Definimos regras aqui: Lotação 50, Tempo Limite 2h (120 min)
     estacionamento = Estacionamento(
         nome="Condomínio Solar", 
-        capacidade_total=50, 
+        capacidade_visitantes=20, 
         tempo_limite_minutos=120
     )
 
