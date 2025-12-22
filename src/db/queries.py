@@ -1,8 +1,8 @@
 """
-Contém todas as constantes de queries SQL usadas pelo Repositório.
+Contém todas as constantes de queries SQL.
 """
 
-# --- Criação de Tabelas ---
+# --- Criação de Tabelas (Tipos Alterados para TEXT) ---
 
 CREATE_TABLE_MORADORES = """
 CREATE TABLE IF NOT EXISTS moradores (
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS moradores (
     modelo TEXT,
     cor TEXT,
     apartamento TEXT NOT NULL,
-    vaga_id INTEGER,
+    vaga_id TEXT,  -- MUDOU DE INTEGER PARA TEXT
     estacionado INTEGER DEFAULT 0
 );
 """
@@ -27,12 +27,11 @@ CREATE TABLE IF NOT EXISTS visitantes (
     modelo TEXT,
     cor TEXT,
     entrada TEXT NOT NULL,
-    numero_vaga INTEGER NOT NULL
+    numero_vaga TEXT NOT NULL -- MUDOU DE INTEGER PARA TEXT
 );
 """
 
-# --- Queries para Moradores ---
-
+# --- Queries (Permanecem iguais na estrutura, mas agora aceitam string) ---
 INSERT_MORADOR = """
 INSERT INTO moradores (nome, placa, cnh, modelo, cor, apartamento, vaga_id)
 VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -50,22 +49,15 @@ DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
 REGISTRAR_ENTRADA_MORADOR = "UPDATE moradores SET estacionado = 1 WHERE id = ?;"
 REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE id = ?;"
 
-# --- Queries para Visitantes ---
-
 INSERT_VISITANTE = """
 INSERT INTO visitantes (nome, placa, cnh, modelo, cor, entrada, numero_vaga)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
 SELECT_ALL_VISITANTES = "SELECT id, nome, placa, cnh, modelo, cor, entrada, numero_vaga FROM visitantes;"
-
 SELECT_VAGAS_OCUPADAS = "SELECT numero_vaga FROM visitantes;"
-
 DELETE_VISITANTE = "DELETE FROM visitantes WHERE id=?;"
 COUNT_VISITANTES = "SELECT COUNT(*) FROM visitantes;"
-
-
-# Seleciona Visitantes E Moradores (apenas os estacionados)
 
 SELECT_OCUPACAO_TOTAL = """
 SELECT numero_vaga as vaga, 'Visitante' as tipo, nome, placa, modelo, cor 
