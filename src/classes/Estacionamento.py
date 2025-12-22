@@ -6,18 +6,18 @@ from datetime import datetime
 class Estacionamento:
     """
     Representa as regras do estacionamento (O 'Cérebro').
-    Gerencia a alocação dinâmica para visitantes e valida regras de tempo e zoneamento.
+    Gerencia a alocação de vagas de visitantes (V01-V20) e validação de moradores.
     """
 
-    def __init__(self, nome="Condomínio POO", capacidade_total=50, tempo_limite_minutos=120):
+    def __init__(self, nome="Condomínio Solar", capacidade_visitantes=20, tempo_limite_minutos=120):
         """
         Args:
             nome (str): Nome do estabelecimento.
-            capacidade_total (int): Total de vagas ROTATIVAS (para visitantes).
+            capacidade_visitantes (int): Quantidade de vagas para visitantes (V01 até Vxx).
             tempo_limite_minutos (int): Tempo máximo em minutos antes do ticket vencer.
         """
         self._nome = nome
-        self._capacidade_total = capacidade_total
+        self._capacidade_visitantes = capacidade_visitantes
         self._tempo_limite_minutos = tempo_limite_minutos
         
         # Hidratado pelo Repositório a cada loop
@@ -31,7 +31,7 @@ class Estacionamento:
 
     @property
     def capacidade_total(self):
-        return self._capacidade_total
+        return self._capacidade_visitantes
 
     @property
     def ocupacao_atual(self):
@@ -43,11 +43,11 @@ class Estacionamento:
 
     @property
     def vagas_disponiveis(self):
-        return self._capacidade_total - self._ocupacao_atual
+        return self._capacidade_visitantes - self._ocupacao_atual
 
     @property
     def esta_lotado(self):
-        return self._ocupacao_atual >= self._capacidade_total
+        return self._ocupacao_atual >= self._capacidade_visitantes
 
     # --- Lógica de Entrada (Visitantes) ---
 
@@ -55,43 +55,62 @@ class Estacionamento:
         """Verificação rápida de lotação para visitantes."""
         return not self.esta_lotado
 
+    # --- GERADOR DE VAGAS DE VISITANTE (V01 ... Vxx) ---
+    def _gerar_lista_vagas_visitantes(self):
+        """Gera lista de strings ['V01', 'V02', ..., 'V20']"""
+        lista = []
+        for i in range(1, self._capacidade_visitantes + 1):
+            lista.append(f"V{i:02d}") # Formata com zero à esquerda
+        return lista
+
     def alocar_vaga_visitante(self, vagas_ocupadas_ids):
         """
-        O Cérebro da Alocação: Descobre a próxima vaga livre (1 a 50).
-        Retorna: int (vaga livre) ou None (lotado).
+        Retorna a primeira vaga 'Vxx' livre.
+        Args: vagas_ocupadas_ids (list[str]): ex ['V01', '101-1']
         """
-        todas_vagas = set(range(1, self._capacidade_total + 1))
+        # Conjunto com todas as vagas possíveis de visitante
+        todas_vagas = set(self._gerar_lista_vagas_visitantes())
+        
+        # Conjunto das vagas que já estão ocupadas no banco
         ocupadas = set(vagas_ocupadas_ids)
+        
+        # Filtra apenas as vagas de visitante que estão livres
         livres = list(todas_vagas - ocupadas)
         
         if not livres:
             return None 
             
-        return min(livres)
+        livres.sort() # Garante ordem alfabética (V01, V02...)
+        return livres[0]
 
-    # --- Lógica de Zoneamento (Moradores) ---
-    # ESTES SÃO OS MÉTODOS QUE FALTAVAM:
+    # --- Lógica de Moradores (Regra: 2 Vagas por Apto) ---
 
-    def vaga_pertence_a_visitantes(self, numero_vaga):
-        """Verifica se o número da vaga cai na zona de rotativos (1 a Capacidade)."""
-        return 1 <= numero_vaga <= self._capacidade_total
-
-    def validar_atribuicao_vaga_morador(self, numero_vaga):
+    def validar_atribuicao_vaga_morador(self, apartamento, vaga_escolhida):
         """
-        Impede que um morador receba uma vaga destinada a visitantes.
-        Retorna: (Bool, Mensagem de Erro)
+        Valida se a vaga escolhida pertence ao apartamento.
+        Regra: Apto '101' -> Vagas permitidas: '101-1' e '101-2'
         """
-        if numero_vaga is None:
-            return True, None # Morador sem vaga (apenas cadastro) é permitido
+        if not vaga_escolhida:
+            return True, None # Permite morador sem vaga cadastrada
 
-        if self.vaga_pertence_a_visitantes(numero_vaga):
-            return False, f"A vaga {numero_vaga} pertence à ZONA DE VISITANTES (1-{self._capacidade_total}). Escolha uma vaga acima de {self._capacidade_total}."
+        vaga_escolhida = vaga_escolhida.upper().strip()
+        apartamento = str(apartamento).strip()
         
-        return True, None
+        # 1. Gera as vagas permitidas para este apto
+        vaga_permitida_1 = f"{apartamento}-1"
+        vaga_permitida_2 = f"{apartamento}-2"
+        
+        permitidas = [vaga_permitida_1, vaga_permitida_2]
+        
+        if vaga_escolhida in permitidas:
+            return True, None
+        else:
+            return False, f"Vaga inválida para o Apto {apartamento}. As vagas exclusivas deste apartamento são: {permitidas}"
 
     # --- Lógica de Tempo (Trigger) ---
 
     def calcular_tempo_permanencia(self, visitante):
+        """Calcula minutos passados desde a entrada."""
         if not visitante.entrada:
             return 0.0
         agora = datetime.now()
@@ -99,5 +118,6 @@ class Estacionamento:
         return delta.total_seconds() / 60
 
     def verificar_ticket_vencido(self, visitante):
+        """Retorna True se o tempo limite foi excedido."""
         minutos = self.calcular_tempo_permanencia(visitante)
         return minutos > self._tempo_limite_minutos
