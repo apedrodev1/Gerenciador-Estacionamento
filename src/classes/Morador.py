@@ -40,14 +40,10 @@ class Morador(Veiculo):
     
     @vaga_id.setter
     def vaga_id(self, valor):
-        # Simples validação para garantir que é inteiro ou None
-        if valor is None:
+        if valor is None or valor == "":
             self._vaga_id = None
         else:
-            try:
-                self._vaga_id = int(valor)
-            except ValueError:
-                raise ValueError("O ID da vaga deve ser um número inteiro.")
+            self._vaga_id = str(valor).upper().strip()
 
 
     def to_dict(self):
