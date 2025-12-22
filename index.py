@@ -40,20 +40,19 @@ def main():
     # 2. Inicializa a Lógica via .env
     # ATENÇÃO: É obrigatório converter para int() pois o .env retorna string
     try:
-        capacidade = int(os.getenv("TOTAL_CAPACITY", 50))
+        capacidade = int(os.getenv("TOTAL_CAPACITY", 20)) # Padrão ajustado para 20
         tempo_limite = int(os.getenv("TIME_LIMIT_MINUTES", 120))
-        nome_estacionamento = os.getenv("PARKING_NAME", "Estacionamento Genérico")
+        nome_estacionamento = os.getenv("PARKING_NAME", "Condomínio Solar")
     except ValueError:
         print("❌ Erro no arquivo .env: Capacidade e Tempo devem ser números inteiros.")
         return
 
+    # --- RESOLUÇÃO DO CONFLITO ---
+    # Aqui usamos o parâmetro correto: 'capacidade_visitantes'
     estacionamento = Estacionamento(
-
-=======
         nome=nome_estacionamento, 
-        capacidade_total=capacidade, 
+        capacidade_visitantes=capacidade, 
         tempo_limite_minutos=tempo_limite
->>>>>>> 5b96924e9cce16861a17c77caa95dd563b862437
     )
 
     # 3. Loop Principal
@@ -67,6 +66,7 @@ def main():
             # --- DISPLAY DO STATUS ---
             print("\n" + "="*40)
             print(f"🏢 {estacionamento.nome} - PAINEL DE CONTROLE")
+            # Usamos capacidade_total (que é uma property) para exibir
             print(f"📊 Lotação Visitantes: {estacionamento.ocupacao_atual}/{estacionamento.capacidade_total}")
             
             if estacionamento.esta_lotado:
