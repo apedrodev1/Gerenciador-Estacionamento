@@ -15,11 +15,9 @@ class Morador(Veiculo):
         # Chama o construtor do Pai (Veiculo) para lidar com a parte "comum"
         super().__init__(id, nome, placa, cnh, modelo, cor)
         
-
         self.apartamento = apartamento
         self.vaga_id = vaga_id
         self.estacionado = estacionado
-
 
     # --- Apartamento ---
     @property
@@ -33,24 +31,24 @@ class Morador(Veiculo):
             raise ValueError(f"Erro no Apartamento: {erro}")
         self._apartamento = val
 
-    
+    # --- Vaga (Agora aceita TEXTO para lógica "10-1") ---
     @property
     def vaga_id(self):
         return self._vaga_id
     
     @vaga_id.setter
     def vaga_id(self, valor):
+        # Se for vazio ou None, fica None
         if valor is None or valor == "":
             self._vaga_id = None
         else:
-            self._vaga_id = str(valor).upper().strip()
-
+            # Aceita string e converte para maiúsculo (ex: "10-1")
+            self._vaga_id = str(valor).strip().upper()
 
     def to_dict(self):
-        """Sobrescreve to_dict para incluir apartament e vaga."""
+        """Sobrescreve to_dict para incluir apartamento e vaga."""
         data = super().to_dict() # Pega os dados do pai
         data['apartamento'] = self.apartamento
         data['vaga_id'] = self.vaga_id
         data['estacionado'] = self.estacionado
-
         return data
