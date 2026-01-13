@@ -51,8 +51,9 @@ WHERE id=?;
 """
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
-REGISTRAR_ENTRADA_MORADOR = "UPDATE moradores SET estacionado = 1 WHERE id = ?;"
-REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE id = ?;"
+
+REGISTRAR_ENTRADA_MORADOR = "UPDATE moradores SET estacionado = 1 WHERE placa = ?;"
+REGISTRAR_SAIDA_MORADOR = "UPDATE moradores SET estacionado = 0 WHERE placa = ?;"
 
 INSERT_VISITANTE = """
 INSERT INTO visitantes (nome, placa, cnh, modelo, cor, entrada, numero_vaga)
