@@ -145,24 +145,31 @@ class EstacionamentoRepository:
 
     # --- CONTROLE DE ACESSO MORADORES ---
 
-    def registrar_entrada_morador(self, morador_id):
-        """Atualiza o status para 'Dentro' (1)."""
+    def registrar_entrada_morador(self, placa):
+        """Marca o morador como estacionado usando a PLACA."""
         cursor = self._get_cursor()
         try:
-            cursor.execute(queries.REGISTRAR_ENTRADA_MORADOR, (morador_id,))
+            cursor.execute(queries.REGISTRAR_ENTRADA_MORADOR, (placa,))
+            
+            if cursor.rowcount == 0:
+                print(f"⚠️  Aviso: Nenhuma placa '{placa}' encontrada para registrar entrada.")
+                
         except sqlite3.Error as e:
             print(f"❌ Erro ao registrar entrada de morador: {e}")
             raise
 
-    def registrar_saida_morador(self, morador_id):
-        """Atualiza o status para 'Fora' (0)."""
+    def registrar_saida_morador(self, placa):
+        """Marca o morador como ausente usando a PLACA."""
         cursor = self._get_cursor()
         try:
-            cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (morador_id,))
+            cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (placa,))
+            
+            if cursor.rowcount == 0:
+                print(f"⚠️  Aviso: Nenhuma placa '{placa}' encontrada para registrar saída.")
+                
         except sqlite3.Error as e:
             print(f"❌ Erro ao registrar saída de morador: {e}")
             raise
-
 
     # --- CRUD Visitantes (Entrada/Saída) ---
 
