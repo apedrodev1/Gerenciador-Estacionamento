@@ -90,6 +90,33 @@ class EstacionamentoRepository:
             print(f"❌ Erro ao listar moradores: {e}")
             return []
 
+    def buscar_morador_por_placa(self, placa):
+        """Busca um morador específico pela placa."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_MORADOR_BY_PLACA, (placa,))
+            row = cursor.fetchone()
+            
+            if row:
+                # Reconstrói o objeto Morador com os dados do banco
+                return Morador(
+                    id=row[0],
+                    nome=row[1],
+                    placa=row[2],
+                    cnh=row[3],
+                    modelo=row[4],
+                    cor=row[5],
+                    apartamento=row[6],
+                    vaga_id=row[7],
+                    estacionado=bool(row[8])
+                )
+            return None
+            
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao buscar morador por placa: {e}")
+            return None
+                    
+
     def remover_morador(self, morador_id):
         cursor = self._get_cursor()
         try:
