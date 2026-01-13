@@ -10,6 +10,8 @@ class Estacionamento:
     """
 
     def __init__(self, nome="Condomínio Solar", capacidade_visitantes=20, tempo_limite_minutos=120):
+        # parametros já são pré definidos / ver co-relação com o .env
+        
         """
         Args:
             nome (str): Nome do estabelecimento.
