@@ -39,6 +39,11 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 SELECT_ALL_MORADORES = "SELECT id, nome, placa, cnh, modelo, cor, apartamento, vaga_id, estacionado FROM moradores;"
 
+SELECT_MORADOR_BY_PLACA = """
+SELECT id, nome, placa, cnh, modelo, cor, apartamento, vaga_id, estacionado 
+FROM moradores WHERE placa = ?;
+"""
+
 UPDATE_MORADOR = """
 UPDATE moradores 
 SET nome=?, placa=?, cnh=?, modelo=?, cor=?, apartamento=?, vaga_id=?
