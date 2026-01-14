@@ -3,7 +3,7 @@ Componentes visuais reutilizáveis.
 Centraliza a lógica de exibição (Headers, Alerts, Menus).
 Localização: src/ui/components.py
 """
-from src.UI.colors import Colors
+from src.ui.colors import Colors
 from src.utils.input_handler import clear_screen
 def header(titulo, subtitulo=None):
     """
