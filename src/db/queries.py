@@ -61,6 +61,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
 SELECT_ALL_VISITANTES = "SELECT id, nome, placa, cnh, modelo, cor, entrada, numero_vaga FROM visitantes;"
+SELECT_VISITANTE_BY_PLACA = """
+SELECT id, nome, placa, cnh, modelo, cor, entrada, numero_vaga 
+FROM visitantes WHERE placa = ?;
+"""
 SELECT_VAGAS_OCUPADAS = "SELECT numero_vaga FROM visitantes;"
 DELETE_VISITANTE = "DELETE FROM visitantes WHERE id=?;"
 COUNT_VISITANTES = "SELECT COUNT(*) FROM visitantes;"
