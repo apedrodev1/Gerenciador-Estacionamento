@@ -233,6 +233,35 @@ class EstacionamentoRepository:
             return []
 
 
+    def buscar_visitante_por_placa(self, placa):
+        """Busca um visitante ativo pela placa."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_VISITANTE_BY_PLACA, (placa,))
+            row = cursor.fetchone()
+            
+            if row:
+                # Desempacota os dados
+                id_db, nome, placa_db, cnh, modelo, cor, entrada_iso, num_vaga = row
+                
+                # Converte a data de texto para objeto datetime
+                data_entrada = datetime.fromisoformat(entrada_iso)
+                
+                return Visitante(
+                    id=id_db,
+                    nome=nome,
+                    placa=placa_db,
+                    cnh=cnh,
+                    modelo=modelo,
+                    cor=cor,
+                    entrada=data_entrada,
+                    numero_vaga=num_vaga
+                )
+            return None
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao buscar visitante por placa: {e}")
+            return None
+
     def buscar_vagas_ocupadas_visitantes(self):
         """Retorna lista de STRINGS das vagas ocupadas."""
         cursor = self._get_cursor()
