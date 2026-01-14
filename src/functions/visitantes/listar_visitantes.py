@@ -1,4 +1,4 @@
-from src.utils.colors import RED, GREEN, YELLOW, RESET, BLUE
+from src.UI.colors import Colors
 
 def listar_visitantes_ativos(estacionamento, repositorio):
     """
@@ -25,11 +25,11 @@ def listar_visitantes_ativos(estacionamento, repositorio):
 
         # 3. O Trigger Visual
         if venceu:
-            cor = RED
+            cor = Colors.RED
             status = "VENCIDO!"
             icone = "🚨"
         else:
-            cor = GREEN
+            cor = Colors.GREEN
             status = "OK"
             icone = ""
 
@@ -38,6 +38,6 @@ def listar_visitantes_ativos(estacionamento, repositorio):
         min_exib = int(minutos % 60)
         tempo_str = f"{horas_exib}h {min_exib}m"
 
-        print(f"{v.placa:<10} {v.nome:<15} {v.entrada.strftime('%H:%M'):<10} {tempo_str:<10} {cor}{status} {icone}{RESET}")
+        print(f"{v.placa:<10} {v.nome:<15} {v.entrada.strftime('%H:%M'):<10} {tempo_str:<10} {cor}{status} {icone}{Colors.RESET}")
     
     print("-" * 60)
