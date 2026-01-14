@@ -1,4 +1,4 @@
-from ...utils.input_handler import clear_screen
+from src.utils.input_handler import clear_screen
 from rich.console import Console
 from rich.table import Table
 from rich import box
@@ -7,7 +7,6 @@ def exibir_mapa_estacionamento(repositorio):
     clear_screen()
     console = Console()
 
-    # Título Estilizado
     console.print("\n[bold cyan]--- 🗺️  MAPA GERAL DO ESTACIONAMENTO ---[/bold cyan]\n")
     
     ocupacao = repositorio.listar_ocupacao_total()
@@ -17,19 +16,15 @@ def exibir_mapa_estacionamento(repositorio):
         input("\nPressione Enter para voltar...")
         return
 
-    # Criando a Tabela Rich
     table = Table(box=box.ROUNDED, title="Veículos no Pátio", title_justify="left")
 
-    # Definindo Colunas
     table.add_column("Vaga", justify="center", style="cyan", no_wrap=True)
     table.add_column("Tipo", style="magenta")
     table.add_column("Motorista", style="white")
     table.add_column("Placa", justify="center", style="green")
     table.add_column("Modelo / Cor", style="dim")
 
-    # Preenchendo as linhas
     for item in ocupacao:
-        # Formatação Visual condicional
         if item['tipo'] == 'Morador':
             tipo_fmt = "[bold blue]Morador 🏠[/bold blue]"
             nome_fmt = f"[bold]{item['nome']}[/bold]"
@@ -47,13 +42,13 @@ def exibir_mapa_estacionamento(repositorio):
             detalhes
         )
 
-    # Exibe a tabela renderizada
     console.print(table)
 
-    # Rodapé com totalizadores
     total = len(ocupacao)
     visitantes = sum(1 for x in ocupacao if x['tipo'] == 'Visitante')
     moradores = total - visitantes
     
     console.print(f"\n[dim]Total: {total} | Visitantes: {visitantes} | Moradores: {moradores}[/dim]")
     
+    # A PAUSA NECESSÁRIA:
+    input("\nPressione Enter para voltar...")
