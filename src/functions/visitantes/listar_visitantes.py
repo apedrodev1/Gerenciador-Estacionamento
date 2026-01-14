@@ -1,4 +1,4 @@
-from src.UI.colors import Colors
+from src.ui.colors import Colors
 
 def listar_visitantes_ativos(estacionamento, repositorio):
     """
