@@ -1,5 +1,5 @@
 from src.utils.input_handler import get_valid_input
-from src.utils.validations import validate_placa, validate_yes_no
+from src.utils.validations import validate_placa
 
 def registrar_saida_morador(repositorio):
     print("\n--- 🛫 Saída de Morador ---")
@@ -18,7 +18,7 @@ def registrar_saida_morador(repositorio):
         return
 
     try:
-        repositorio.registrar_saida_morador(morador.id)
+        repositorio.registrar_saida_morador(morador.placa) 
         print(f"👋 Até logo, {morador.nome}!")
     except Exception as e:
         print(f"❌ Erro ao registrar saída: {e}")
