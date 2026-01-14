@@ -1,48 +1,51 @@
 from src.classes.Visitante import Visitante
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa, validate_names, validate_cnh
+from src.ui.components import header, show_success, show_error, show_warning, Colors
 
 def registrar_entrada_visitante(estacionamento, repositorio):
-    print(f"\n--- 🚗 Registrar Entrada (Vagas Livres: {estacionamento.vagas_disponiveis}) ---")
+    header("REGISTRAR ENTRADA (VISITANTE)")
+    print(f"ℹ️  Vagas de Visitantes Livres: {estacionamento.vagas_disponiveis}")
 
-    # 1. Busca quais vagas já estão ocupadas no banco (Repo -> Banco)
+    # 1. Busca Vagas
     vagas_ocupadas = repositorio.buscar_vagas_ocupadas_visitantes()
-
-    # 2. Usa a lógica do Estacionamento para descobrir a próxima vaga livre (Lógica)
     vaga_livre = estacionamento.alocar_vaga_visitante(vagas_ocupadas)
 
     if vaga_livre is None:
-        print("❌ O estacionamento está LOTADO (Não há números de vaga disponíveis)!")
+        show_error("O estacionamento está LOTADO para visitantes!")
         return
 
-    print(f"ℹ️  Próxima vaga disponível: {vaga_livre}")
+    print(f"\n🅿️  Próxima vaga sugerida: {Colors.BOLD}{Colors.GREEN}{vaga_livre}{Colors.RESET}")
 
-    # 3. Coleta de Dados
-    print("\nPreencha os dados do visitante:")
+    # 2. Coleta de Dados
+    print("\n--- Dados do Visitante ---")
     nome, _ = get_valid_input("Nome do Motorista: ", validate_names)
     placa, _ = get_valid_input("Placa do Veículo: ", validate_placa)
-    cnh, _ = get_valid_input("CNH: ", validate_cnh)
+    cnh, _ = get_valid_input("CNH (apenas números): ", validate_cnh)
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
 
-    # 4. Criação do Objeto com a Vaga Alocada
+    # 3. Criação e Persistência
     novo_visitante = Visitante(
         nome=nome,
         placa=placa,
         cnh=cnh,
         modelo=modelo,
         cor=cor,
-        numero_vaga=vaga_livre  # <--- Salvamos a vaga aqui
+        numero_vaga=vaga_livre
     )
 
-    # 5. Persistência
     try:
         repositorio.registrar_entrada(novo_visitante)
-        print("\n" + "="*40)
-        print(f"✅ ENTRADA CONFIRMADA!")
-        print(f"👤 Motorista: {nome}")
-        print(f"🚘 Placa: {placa}")
-        print(f"🅿️  DIRIJA-SE À VAGA: {vaga_livre}") 
-        print("="*40)
+        
+        # Mensagem Bonita com Pausa
+        msg = (
+            f"Visitante registrado com sucesso!\n"
+            f"   👤 {nome}\n"
+            f"   🚘 {placa}\n"
+            f"   📍 VAGA: {vaga_livre}"
+        )
+        show_success(msg)
+        
     except Exception as e:
-        print(f"❌ Erro ao salvar no banco: {e}")
+        show_error(f"Erro ao salvar no banco: {e}")
