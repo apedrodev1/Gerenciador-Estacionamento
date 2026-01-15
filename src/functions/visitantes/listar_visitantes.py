@@ -1,43 +1,49 @@
+from src.ui.tables import criar_tabela
 from src.ui.colors import Colors
 
 def listar_visitantes_ativos(estacionamento, repositorio):
     """
     Lista todos os visitantes atualmente no estacionamento.
-    Aplica o 'Trigger Visual' se o tempo limite estourou.
+    Usa a nova tabela Rich padronizada.
     """
-    # 1. Busca dados do Banco
-    visitantes = repositorio.listar_visitantes_ativos()
-
-    print(f"\n--- 📋 Visitantes no Pátio ({len(visitantes)}/{estacionamento.capacidade_total}) ---")
     
-    if not visitantes:
-        print("Nenhum visitante registrado no momento.")
-        return
-
-    # Cabeçalho da Tabela
-    print(f"{'PLACA':<10} {'NOME':<15} {'ENTRADA':<10} {'TEMPO':<10} {'STATUS'}")
-    print("-" * 60)
-
+    visitantes = repositorio.listar_visitantes_ativos()
+    
+    # Prepara os dados para a tabela
+    dados_linhas = []
+    
     for v in visitantes:
-        # 2. Lógica de Cálculo (Delegada para a classe Estacionamento)
         minutos = estacionamento.calcular_tempo_permanencia(v)
         venceu = estacionamento.verificar_ticket_vencido(v)
 
-        # 3. O Trigger Visual
+        # Formatação de Status com cores do Rich
         if venceu:
-            cor = Colors.RED
-            status = "VENCIDO!"
-            icone = "🚨"
+            status = "[bold red]VENCIDO 🚨[/bold red]"
         else:
-            cor = Colors.GREEN
-            status = "OK"
-            icone = ""
+            status = "[bold green]OK[/bold green]"
 
-        # Formatação do tempo (ex: 1h 30m)
-        horas_exib = int(minutos // 60)
-        min_exib = int(minutos % 60)
-        tempo_str = f"{horas_exib}h {min_exib}m"
+        horas = int(minutos // 60)
+        mins = int(minutos % 60)
+        tempo_str = f"{horas}h {mins}m"
+        
+        hora_entrada = v.entrada.strftime('%H:%M')
 
-        print(f"{v.placa:<10} {v.nome:<15} {v.entrada.strftime('%H:%M'):<10} {tempo_str:<10} {cor}{status} {icone}{Colors.RESET}")
+        # Adiciona a linha na lista
+        dados_linhas.append([
+            v.numero_vaga,
+            v.placa,
+            v.nome,
+            hora_entrada,
+            tempo_str,
+            status
+        ])
+
+    # Chama o renderizador padrão
+    criar_tabela(
+        titulo="VISITANTES NO PÁTIO",
+        colunas=["Vaga", "Placa", "Nome", "Entrada", "Tempo", "Status"],
+        linhas=dados_linhas
+    )
     
-    print("-" * 60)
+    # Pausa para não piscar a tela
+    input(f"{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
