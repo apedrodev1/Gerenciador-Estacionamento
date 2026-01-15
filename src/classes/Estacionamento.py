@@ -10,8 +10,6 @@ class Estacionamento:
     """
 
     def __init__(self, nome="Condomínio Solar", capacidade_visitantes=20, tempo_limite_minutos=120):
-        # parametros já são pré definidos / ver co-relação com o .env
-        
         """
         Args:
             nome (str): Nome do estabelecimento.
@@ -85,29 +83,31 @@ class Estacionamento:
         livres.sort() # Garante ordem alfabética (V01, V02...)
         return livres[0]
 
-    # --- Lógica de Moradores (Regra: 2 Vagas por Apto) ---
+    # --- Lógica de Moradores (ATUALIZADA) ---
 
-    def validar_atribuicao_vaga_morador(self, apartamento, vaga_escolhida):
+    def validar_atribuicao_vaga_morador(self, vaga_numero):
         """
-        Valida se a vaga escolhida pertence ao apartamento.
-        Regra: Apto '101' -> Vagas permitidas: '101-1' e '101-2'
+        Valida se a vaga numérica pode ser atribuída a um morador.
+        Regra: Deve ser maior que a capacidade de visitantes (ex: > 20).
+        Args:
+            vaga_numero (int or str): O número da vaga desejada.
         """
-        if not vaga_escolhida:
-            return True, None # Permite morador sem vaga cadastrada
+        # 1. Permite remover a vaga (None ou vazio)
+        if not vaga_numero:
+            return True, None 
 
-        vaga_escolhida = vaga_escolhida.upper().strip()
-        apartamento = str(apartamento).strip()
-        
-        # 1. Gera as vagas permitidas para este apto
-        vaga_permitida_1 = f"{apartamento}-1"
-        vaga_permitida_2 = f"{apartamento}-2"
-        
-        permitidas = [vaga_permitida_1, vaga_permitida_2]
-        
-        if vaga_escolhida in permitidas:
-            return True, None
-        else:
-            return False, f"Vaga inválida para o Apto {apartamento}. As vagas exclusivas deste apartamento são: {permitidas}"
+        try:
+            v_num = int(vaga_numero)
+            
+            # 2. Regra de Negócio: Morador só pode pegar vaga ACIMA das vagas de visitante
+            # Se Capacidade = 20, Morador só pode pegar da 21 para cima.
+            if v_num > self._capacidade_visitantes:
+                return True, None
+            else:
+                return False, f"A vaga {v_num} pertence à área Rotativa (V01-V{self._capacidade_visitantes}). Escolha acima de {self._capacidade_visitantes}."
+                
+        except ValueError:
+             return False, "O número da vaga deve ser um inteiro válido."
 
     # --- Lógica de Tempo (Trigger) ---
 
