@@ -1,10 +1,12 @@
 """
 Repositório Especializado: Visitantes.
 Lida com 'visitantes' (rotativo) e 'visitantes_cadastrados' (frequentes).
+Localização: src/repositories/visitante_repository.py
 """
 from datetime import datetime
 from src.repositories.base_repository import BaseRepository
 from src.db import queries
+
 from src.classes.Visitante.VisitanteControle import VisitanteCatraca
 from src.classes.Visitante.VisitanteCadastro import VisitanteCadastro
 
@@ -28,7 +30,9 @@ class VisitanteRepository(BaseRepository):
                                       modelo=row[4], cor=row[5], data_cadastro=row[6])
                 lista.append(v)
             return lista
-        except Exception: return []
+        except Exception as e:
+            print(f"❌ Erro ao listar cadastros: {e}")
+            return []
 
     def buscar_cadastro_por_placa(self, placa):
         cursor = self._get_cursor()
@@ -39,7 +43,9 @@ class VisitanteRepository(BaseRepository):
                 return VisitanteCadastro(id=row[0], nome=row[1], placa=row[2], cnh=row[3],
                                          modelo=row[4], cor=row[5], data_cadastro=row[6])
             return None
-        except Exception: return None
+        except Exception as e:
+            print(f"❌ Erro ao buscar cadastro: {e}")
+            return None
 
     def atualizar_cadastro(self, v: VisitanteCadastro):
         cursor = self._get_cursor()
@@ -65,21 +71,37 @@ class VisitanteRepository(BaseRepository):
         cursor.execute(queries.DELETE_VISITANTE, (id,))
 
     def listar_ativos(self):
+        """Retorna lista de visitantes NO PÁTIO."""
         cursor = self._get_cursor()
         lista = []
-        try:
-            cursor.execute(queries.SELECT_ALL_VISITANTES)
-            for row in cursor.fetchall():
-                id, nome, placa, cnh, modelo, cor, ent, vaga = row
-                try:
-                    data_entrada = datetime.fromisoformat(ent)
-                except ValueError: data_entrada = datetime.now()
+        
+        # Sem try/except genérico para facilitar o debug
+        cursor.execute(queries.SELECT_ALL_VISITANTES)
+        rows = cursor.fetchall()
+        
+        for row in rows:
+            # id, nome, placa, cnh, modelo, cor, ent, vaga
+            id_db, nome, placa, cnh, modelo, cor, ent, vaga = row
+            
+            try:
+                data_entrada = datetime.fromisoformat(ent)
+            except ValueError: 
+                data_entrada = datetime.now()
 
-                v = Visitante_catraca(id=id, nome=nome, placa=placa, cnh=cnh, 
-                                      modelo=modelo, cor=cor, entrada=data_entrada, numero_vaga=vaga)
-                lista.append(v)
-            return lista
-        except Exception: return []
+            # Instancia a classe correta: VisitanteCatraca
+            v = VisitanteCatraca(
+                id=id_db, 
+                nome=nome, 
+                placa=placa, 
+                cnh=cnh, 
+                modelo=modelo, 
+                cor=cor, 
+                entrada=data_entrada, 
+                numero_vaga=vaga
+            )
+            lista.append(v)
+            
+        return lista
 
     def buscar_ativos_por_placa(self, placa):
         cursor = self._get_cursor()
@@ -88,10 +110,19 @@ class VisitanteRepository(BaseRepository):
             row = cursor.fetchone()
             if row:
                 id, nome, p_db, cnh, mod, cor, ent, vaga = row
-                return Visitante_catraca(id=id, nome=nome, placa=p_db, cnh=cnh, 
-                                         modelo=mod, cor=cor, entrada=datetime.fromisoformat(ent), numero_vaga=vaga)
+                
+                try:
+                    data_entrada = datetime.fromisoformat(ent)
+                except ValueError:
+                    data_entrada = datetime.now()
+
+                # CORREÇÃO AQUI: Usar VisitanteCatraca (igual ao import)
+                return VisitanteCatraca(id=id, nome=nome, placa=p_db, cnh=cnh, 
+                                        modelo=mod, cor=cor, entrada=data_entrada, numero_vaga=vaga)
             return None
-        except Exception: return None
+        except Exception as e:
+            print(f"❌ Erro ao buscar ativo: {e}")
+            return None
 
     def buscar_vagas_ocupadas(self):
         cursor = self._get_cursor()
