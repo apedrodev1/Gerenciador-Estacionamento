@@ -1,58 +1,78 @@
+"""
+Módulo de Gerenciamento de Moradores.
+Contém os fluxos de Cadastro, Edição, Remoção e Listagem.
+Localização: src/functions/moradores/gerenciar_moradores.py
+"""
 from src.classes.Morador import Morador
 from src.utils.input_handler import get_valid_input, clear_screen
-from src.utils.validations import validate_names, validate_placa, validate_cnh, validate_apartamento, validate_yes_no
+from src.utils.validations import (
+    validate_names, validate_placa, validate_cnh, validate_apartamento, 
+    validate_yes_no, validate_placa_unica, validate_cnh_unica
+)
+# IMPORTS VISUAIS (Nova UI)
+from src.ui.tables import criar_tabela
+from src.ui.colors import Colors
+from src.ui.components import header, menu_option, show_success, show_error, show_warning
 
 # --- FUNÇÕES AUXILIARES (UI) ---
 
-def _renderizar_tabela(moradores):
+def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR", apenas_listar=False):
     """
-    Apenas desenha a tabela na tela. 
-    Não pede input e não limpa a tela (para ser flexível).
-    Retorna uma lista com os IDs válidos exibidos.
+    Fluxo: Mostra Tabela Rich -> Pede ID (ou pausa se for apenas leitura).
+    Retorna o Objeto Morador ou None.
     """
-    if not moradores:
-        print("\n❌ Nenhum morador cadastrado.")
-        return []
-
-    # Cabeçalho da Tabela
-    print(f"{'ID':<4} {'NOME':<20} {'APTO':<8} {'PLACA':<10} {'VAGA'}")
-    print("-" * 60)
-
-    ids_validos = []
-    for m in moradores:
-        ids_validos.append(m.id)
-        vaga_info = m.vaga_id if m.vaga_id else "---"
-        print(f"{m.id:<4} {m.nome:<20} {m.apartamento:<8} {m.placa:<10} {vaga_info}")
-    print("-" * 60)
-    
-    return ids_validos
-
-def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
-    """
-    Fluxo completo: Limpa tela -> Mostra Tabela -> Pede ID.
-    Retorna o Objeto ou None.
-    """
-    clear_screen()
     moradores = repositorio.listar_moradores()
 
-    print(f"\n--- 📋 {acao_titulo} MORADOR ---")
+    # Prepara dados para a tabela
+    dados_linhas = []
+    ids_validos = []
     
-    # Usa a função auxiliar para desenhar (DRY)
-    ids_validos = _renderizar_tabela(moradores)
+    for m in moradores:
+        ids_validos.append(m.id)
+        
+        # Formatação condicional: Destaca vaga se existir
+        if m.vaga_id:
+            vaga_fmt = f"[cyan]{m.vaga_id}[/cyan]"
+        else:
+            vaga_fmt = "[dim]Rotativa[/dim]"
+            
+        dados_linhas.append([
+            str(m.id),
+            m.nome,
+            m.apartamento,
+            m.placa,
+            vaga_fmt
+        ])
+
+    # Desenha Tabela
+    # Se for apenas listar, mudamos o título para ficar contextual
+    titulo_final = "LISTA DE MORADORES" if apenas_listar else f"{acao_titulo} MORADOR"
     
+    criar_tabela(
+        titulo=titulo_final,
+        colunas=["ID", "Nome", "Apto", "Placa", "Vaga Fixa"],
+        linhas=dados_linhas
+    )
+    
+    # Se não tiver ninguém, pausa e sai
     if not ids_validos:
-        input("\nPressione Enter para voltar...")
+        input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
         return None
 
-    # Loop de Seleção (Só acontece se tiver moradores)
+    # MODO LEITURA: Se for apenas listar, não pede ID, só pausa.
+    if apenas_listar:
+        input(f"\n{Colors.DIM}Pressione Enter para voltar ao menu...{Colors.RESET}")
+        return None
+
+    # MODO SELEÇÃO: Pede ID
     while True:
-        id_str = input("\nDigite o ID do morador (ou 0 para cancelar): ").strip()
+        id_str = input(f"\n{Colors.CYAN}Digite o ID do morador (ou 0 para cancelar): {Colors.RESET}").strip()
 
         if id_str == '0':
             return None
 
         if not id_str.isdigit():
-            print("❌ Por favor, digite um número válido.")
+            show_warning("Digite apenas números.")
             continue
         
         id_escolhido = int(id_str)
@@ -60,60 +80,51 @@ def _selecionar_morador_da_lista(repositorio, acao_titulo="SELECIONAR"):
         if id_escolhido in ids_validos:
             return next(m for m in moradores if m.id == id_escolhido)
         else:
-            print("❌ ID não encontrado na lista acima. Tente novamente.")
+            show_warning("ID não encontrado na lista acima.")
 
-# --- FORMULÁRIOS ---
+# --- FORMULÁRIOS --- CRIAR UM ARQUIVO SEPARADO DEPOIS?
 
 def adicionar_morador_form(repositorio, estacionamento):
     """Formulário para criar um novo morador."""
-    clear_screen()
-    apto, _ = get_valid_input("Apartamento (ex: 101, 204): ", validate_apartamento)
-    print("\n--- 🆕 NOVO MORADOR ---")
+    header("NOVO CADASTRO DE MORADOR")
     
-    nome, _ = get_valid_input("Nome: ", validate_names)
+    print(f"{Colors.DIM}⏳ Carregando validações de segurança...{Colors.RESET}")
+    placas_ocupadas = repositorio.listar_todas_placas()
+    cnhs_ocupadas = repositorio.listar_todas_cnhs()
+    
+    print("\nPreencha os dados:")
+    nome, _ = get_valid_input("Nome Completo: ", validate_names)
     apto, _ = get_valid_input("Apartamento: ", validate_apartamento)
-    placa, _ = get_valid_input("Placa: ", validate_placa)
-    cnh, _ = get_valid_input("CNH: ", validate_cnh)
+    
+    # Validação com Unicidade (Impede duplicatas)
+    placa, _ = get_valid_input("Placa do Veículo: ", lambda x: validate_placa_unica(x, placas_ocupadas))
+    cnh, _ = get_valid_input("CNH do Titular: ", lambda x: validate_cnh_unica(x, cnhs_ocupadas))
     
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
 
-    while True:
-        print(f"ℹ️  Vagas disponíveis para o apto {apto}: {apto}-1 ou {apto}-2")
-        vaga_str = input("Qual vaga deseja ocupar? (ou Enter para nenhuma): ").strip()
-        
-        if not vaga_str:
-            vaga_id = None
-            break
-            
-        # O Cérebro valida se a vaga bate com o apto
-        valido, msg_erro = estacionamento.validar_atribuicao_vaga_morador(apto, vaga_str)
-        
-        if valido:
-            vaga_id = vaga_str.upper()
-            break
-        else:
-            print(f"❌ {msg_erro}")
+    # Lógica de Vaga
+    vaga_id = None
+    print("-" * 30)
     
     while True:
-        vaga_str = input(f"Número da Vaga Fixa (Acima de {estacionamento.capacidade_total} ou Enter para sem vaga): ")
-        
-        if not vaga_str: # Vazio = Sem vaga
-            vaga_id = None
+        tem_vaga = input("Atribuir vaga fixa numérica agora? (s/n): ").lower().strip()
+        if tem_vaga == 'n':
             break
-            
-        if not vaga_str.isdigit():
-            print("❌ Digite apenas números.")
-            continue
-            
-        vaga_id = int(vaga_str)
-
-        valido, msg_erro = estacionamento.validar_atribuicao_vaga_morador(vaga_id)
-        
-        if valido:
-            break
+        elif tem_vaga == 's':
+            vaga_str = input(f"Número da Vaga (Acima de {estacionamento.capacidade_total}): ")
+            if vaga_str.isdigit():
+                v_num = int(vaga_str)
+                valido, msg = estacionamento.validar_atribuicao_vaga_morador(v_num)
+                if valido:
+                    vaga_id = v_num
+                    break
+                else:
+                    show_warning(msg)
+            else:
+                show_warning("Digite um número válido.")
         else:
-            print(f"❌ {msg_erro}")
+            print("Responda apenas 's' ou 'n'.")
 
     novo_morador = Morador(
         nome=nome,
@@ -127,158 +138,120 @@ def adicionar_morador_form(repositorio, estacionamento):
 
     try:
         repositorio.adicionar_morador(novo_morador)
-        print(f"\n✅ Morador {nome} (Apto {apto}) cadastrado com sucesso!")
+        show_success(f"Morador {nome} (Apto {apto}) cadastrado com sucesso!")
     except Exception as e:
-        print(f"\n❌ Erro ao salvar: {e}")
-    
-    input("\nPressione Enter para continuar...")
+        show_error(f"Erro ao salvar no banco: {e}")
 
 def remover_morador_form(repositorio):
     """Remove um morador usando o seletor visual."""
-    
-    # Usa o seletor (que já tem a lógica de input de ID)
     morador_alvo = _selecionar_morador_da_lista(repositorio, acao_titulo="REMOVER")
     
     if not morador_alvo:
         return 
 
-    print("\n" + "!"*40)
-    print(f"⚠️  ATENÇÃO: Você selecionou:")
-    print(f"   Nome: {morador_alvo.nome}")
-    print(f"   Apto: {morador_alvo.apartamento}")
-    print(f"   Placa: {morador_alvo.placa}")
-    print("!"*40)
+    # Confirmação Visual
+    print("\n" + Colors.RED + "!"*50 + Colors.RESET)
+    print(f"{Colors.BOLD}   CONFIRMAÇÃO DE EXCLUSÃO{Colors.RESET}")
+    print(f"   👤 Nome:  {morador_alvo.nome}")
+    print(f"   🏠 Apto:  {morador_alvo.apartamento}")
+    print(f"   🚘 Placa: {morador_alvo.placa}")
+    print(Colors.RED + "!"*50 + Colors.RESET)
 
-    confirmar, _ = get_valid_input(f"\nDeseja MESMO remover este morador? (s/n): ", validate_yes_no)
+    confirmar, _ = get_valid_input(f"\nTem certeza que deseja apagar este registro? (s/n): ", validate_yes_no)
 
     if confirmar == 's':
         try:
             repositorio.remover_morador(morador_alvo.id)
-            print(f"\n🗑️  Morador {morador_alvo.nome} removido permanentemente.")
+            show_success("Registro removido do sistema.")
         except Exception as e:
-            print(f"\n❌ Erro ao remover: {e}")
+            show_error(f"Erro ao remover: {e}")
     else:
-        print("\n↩️  Operação cancelada.")
-    
-    input("\nPressione Enter para continuar...")
+        print(f"\n{Colors.YELLOW}↩️  Operação cancelada.{Colors.RESET}")
+        input("Pressione Enter...")
 
 def editar_morador_form(repositorio, estacionamento):
-    """Formulário para editar dados de um morador existente."""
-    
-    # 1. Seleciona o morador usando o seletor visual
+    """Formulário para editar dados."""
     morador = _selecionar_morador_da_lista(repositorio, acao_titulo="EDITAR")
     
     if not morador:
         return
 
     while True:
-        clear_screen()
-        print(f"\n--- 📝 EDITANDO: {morador.nome} ---")
-        print(f"1. Nome: {morador.nome}")
-        print(f"2. Apartamento: {morador.apartamento}")
-        print(f"3. Placa: {morador.placa}")
-        print(f"4. CNH: {morador.cnh}")
-        print(f"5. Modelo: {morador.modelo}")
-        print(f"6. Cor: {morador.cor}")
-        vaga_display = morador.vaga_id if morador.vaga_id else "Sem Vaga"
-        print(f"7. Vaga Fixa: {vaga_display}")
-        print("-" * 30)
-        print("0. 💾 SALVAR E SAIR")
+        # Usa o Header padrão para limpar a tela
+        header(f"EDITANDO: {morador.nome.upper()}")
         
-        opcao = input("\nO que deseja alterar? ").strip()
+        # Mostra o estado atual
+        print(f"1. Nome:        {morador.nome}")
+        print(f"2. Apartamento: {morador.apartamento}")
+        print(f"3. Placa:       {morador.placa}")
+        print(f"4. CNH:         {morador.cnh}")
+        print(f"5. Modelo:      {morador.modelo}")
+        print(f"6. Cor:         {morador.cor}")
+        print(f"7. Vaga Fixa:   {morador.vaga_id if morador.vaga_id else 'Sem Vaga'}")
+        print("-" * 40)
+        menu_option("0", "💾 SALVAR E SAIR")
+        
+        opcao = input(f"\n{Colors.CYAN}O que deseja alterar? {Colors.RESET}").strip()
 
         if opcao == '0':
             try:
                 repositorio.atualizar_morador(morador)
-                print("\n✅ Alterações salvas com sucesso!")
+                show_success("Dados atualizados com sucesso!")
             except Exception as e:
-                print(f"\n❌ Erro ao salvar alterações: {e}")
-            input("Pressione Enter para continuar...")
+                show_error(f"Erro ao salvar: {e}")
             break
 
-        # --- EDIÇÃO DOS CAMPOS ---
         elif opcao == '1':
-            novo_nome, _ = get_valid_input(f"Novo Nome ({morador.nome}): ", validate_names)
-            morador.nome = novo_nome
-            
+            morador.nome, _ = get_valid_input(f"Novo Nome: ", validate_names)
         elif opcao == '2':
-            novo_apto, _ = get_valid_input(f"Novo Apto ({morador.apartamento}): ", validate_apartamento)
-            morador.apartamento = novo_apto
-            
+            morador.apartamento, _ = get_valid_input(f"Novo Apto: ", validate_apartamento)
         elif opcao == '3':
-            nova_placa, _ = get_valid_input(f"Nova Placa ({morador.placa}): ", validate_placa)
-            morador.placa = nova_placa
-            
+            morador.placa, _ = get_valid_input(f"Nova Placa: ", validate_placa)
         elif opcao == '4':
-            nova_cnh, _ = get_valid_input(f"Nova CNH ({morador.cnh}): ", validate_cnh)
-            morador.cnh = nova_cnh
-            
+            morador.cnh, _ = get_valid_input(f"Nova CNH: ", validate_cnh)
         elif opcao == '5':
-            morador.modelo = input(f"Novo Modelo ({morador.modelo}): ")
-            
+            morador.modelo = input("Novo Modelo: ")
         elif opcao == '6':
-            morador.cor = input(f"Nova Cor ({morador.cor}): ")
-            
+            morador.cor = input("Nova Cor: ")
         elif opcao == '7':
-            # Validação de Zona (Regra de Negócio)
-            while True:
-                vaga_str = input(f"Nova Vaga (Atual: {vaga_display} | Min: {estacionamento.capacidade_total + 1}): ")
-                
-                if not vaga_str: 
-                    morador.vaga_id = None
-                    break
-                
-                if not vaga_str.isdigit():
-                    print("❌ Digite apenas números.")
-                    continue
-                
-                nova_vaga = int(vaga_str)
-                valido, msg = estacionamento.validar_atribuicao_vaga_morador(nova_vaga)
-                
-                if valido:
-                    morador.vaga_id = nova_vaga
-                    break
-                else:
-                    print(f"❌ {msg}")
-        
-        else:
-            print("❌ Opção inválida.")
+             novo_v = input("Nova Vaga Numérica (ou Enter para limpar): ")
+             if not novo_v:
+                 morador.vaga_id = None
+             elif novo_v.isdigit():
+                 v_num = int(novo_v)
+                 val, msg = estacionamento.validar_atribuicao_vaga_morador(v_num)
+                 if val: 
+                     morador.vaga_id = v_num
+                 else: 
+                     show_warning(msg)
+             else:
+                 show_warning("Digite um número válido.")
 
-
-# --- MENU PRINCIPAL ---
+# --- MENU PRINCIPAL INTERNO ---
 
 def menu_gerenciar_moradores(repositorio, estacionamento):
-    """Menu Principal de Moradores."""
+    """Sub-menu de gestão de moradores."""
     while True:
-        clear_screen()
-        print("\n--- 🏘️  GESTÃO DE MORADORES ---")
-        print("1. Adicionar Morador")
-        print("2. Editar Morador")   # <--- Nova Opção
-        print("3. Remover Morador")
-        print("4. Listar Moradores (Visualizar)")
-        print("0. Voltar ao Menu Principal (ou Enter)")
+        header("GESTÃO DE MORADORES 🏘️")
         
-        opcao = input("\nEscolha: ").strip()
+        menu_option("1", "Adicionar Novo Morador")
+        menu_option("2", "Editar Dados Cadastrais")
+        menu_option("3", "Remover Morador")
+        menu_option("4", "Listar Cadastro Completo")
+        print("-" * 50)
+        menu_option("0", "Voltar ao Menu Principal")
+        
+        opcao = input(f"\n{Colors.CYAN}➤ Escolha uma opção: {Colors.RESET}").strip()
         
         if opcao == '1':
             adicionar_morador_form(repositorio, estacionamento)
-        
         elif opcao == '2':
-            editar_morador_form(repositorio, estacionamento) # <--- Chamada
-            
+            editar_morador_form(repositorio, estacionamento)
         elif opcao == '3':
             remover_morador_form(repositorio)
-        
         elif opcao == '4':
-            clear_screen()
-            print("\n--- 📋 LISTA DE MORADORES ---")
-            moradores = repositorio.listar_moradores()
-            _renderizar_tabela(moradores)
-            input("\nPressione Enter para voltar...")
-        
-        elif opcao == '0' or opcao == '': 
+            _selecionar_morador_da_lista(repositorio, acao_titulo="VISUALIZAR", apenas_listar=True)
+        elif opcao == '0': 
             break
-        
         else:
-            print("❌ Opção inválida.")
-            input("Pressione Enter...")
+            show_warning("Opção inválida.")
