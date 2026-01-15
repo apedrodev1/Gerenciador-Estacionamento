@@ -37,13 +37,14 @@ class EstacionamentoRepository:
 
     # --- Inicialização ---
 
-    def _create_tables(self):
+   def _create_tables(self):
         """Cria as tabelas se não existirem."""
         try:
-            # Usa uma conexão temporária para garantir a criação
             with self.db_manager as conn:
                 conn.execute(queries.CREATE_TABLE_MORADORES)
                 conn.execute(queries.CREATE_TABLE_VISITANTES)
+                # --- NOVA LINHA ---
+                conn.execute(queries.CREATE_TABLE_VISITANTES_CADASTRO)
         except sqlite3.Error as e:
             print(f"❌ Erro ao criar tabelas: {e}")
 
@@ -283,7 +284,42 @@ class EstacionamentoRepository:
         except sqlite3.Error:
             return 0
 
-    
+
+    def listar_todas_placas(self):
+        """Retorna um SET (conjunto) com todas as placas cadastradas (Moradores e Visitantes)."""
+        cursor = self._get_cursor()
+        placas = set() # Usamos Set para busca O(1) super rápida
+        try:
+            # Busca placas de moradores
+            cursor.execute("SELECT placa FROM moradores")
+            placas.update(row[0] for row in cursor.fetchall())
+            
+            # Busca placas de visitantes
+            cursor.execute("SELECT placa FROM visitantes")
+            placas.update(row[0] for row in cursor.fetchall())
+            
+            return placas
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao listar placas: {e}")
+            return set()
+
+    def listar_todas_cnhs(self):
+        """Retorna um SET com todas as CNHs cadastradas."""
+        cursor = self._get_cursor()
+        cnhs = set()
+        try:
+            cursor.execute("SELECT cnh FROM moradores")
+            cnhs.update(row[0] for row in cursor.fetchall())
+            
+            cursor.execute("SELECT cnh FROM visitantes")
+            cnhs.update(row[0] for row in cursor.fetchall())
+            
+            return cnhs
+        except sqlite3.Error as e:
+            print(f"❌ Erro ao listar CNHs: {e}")
+            return set()
+
+
     def listar_ocupacao_total(self):
         """
         Retorna uma lista unificada de todos os veículos no pátio.
