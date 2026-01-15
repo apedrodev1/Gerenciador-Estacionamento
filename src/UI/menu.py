@@ -12,6 +12,7 @@ from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
 from src.functions.visitantes.catraca_visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.catraca_visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
+from src.functions.visitantes.gerenciar_visitantes import menu_gerenciar_visitantes
 
 def exibir_dashboard_topo(estacionamento, repo):
     """Monta o cabeçalho dinâmico."""
@@ -46,20 +47,21 @@ def executar_menu_principal(repo, estacionamento):
             exibir_dashboard_topo(estacionamento, repo)
 
             # 2. Desenha Opções
-            print(f"{Colors.BOLD}   VISITANTES\n{Colors.RESET}")
+            print(f"{Colors.BOLD}   VISITANTES{Colors.RESET}")
             menu_option("1", "Registrar Entrada")
             menu_option("2", "Registrar Saída")
             menu_option("3", "Listar / Verificar Vencidos")
+            menu_option("4", "Gerenciar Cadastros Frequentes ⭐") # <--- NOVA OPÇÃO
             print("")
             
-            print(f"{Colors.BOLD}   MORADORES\n{Colors.RESET}")
-            menu_option("4", "Entrada (Catraca)")
-            menu_option("5", "Saída (Catraca)")
-            menu_option("6", "Gerenciar Cadastros")
+            print(f"{Colors.BOLD}   MORADORES{Colors.RESET}")
+            menu_option("5", "Entrada (Catraca)") # <--- Renumerado
+            menu_option("6", "Saída (Catraca)")   # <--- Renumerado
+            menu_option("7", "Gerenciar Cadastros") # <--- Renumerado
             print("")
             
-            print(f"{Colors.BOLD}   SISTEMA\n{Colors.RESET}")
-            menu_option("7", "Mapa Geral do Pátio\n")
+            print(f"{Colors.BOLD}   SISTEMA{Colors.RESET}")
+            menu_option("8", "Mapa Geral do Pátio") # <--- Renumerado
             print("-" * 50)
             menu_option("0", "Sair")
 
@@ -74,13 +76,17 @@ def executar_menu_principal(repo, estacionamento):
             elif opcao == '3':
                 listar_visitantes_ativos(estacionamento, repo)
             elif opcao == '4':
-                registrar_entrada_morador(repo)
+                menu_gerenciar_visitantes(repo) 
+            
             elif opcao == '5':
-                registrar_saida_morador(repo)
+                registrar_entrada_morador(repo)
             elif opcao == '6':
-                menu_gerenciar_moradores(repo, estacionamento)
+                registrar_saida_morador(repo)
             elif opcao == '7':
-                exibir_mapa_estacionamento(repo) # Agora chamando do src/ui/mapa.py
+                menu_gerenciar_moradores(repo, estacionamento)
+            
+            elif opcao == '8':
+                exibir_mapa_estacionamento(repo)
             
             elif opcao == '0':
                 clear_screen()
