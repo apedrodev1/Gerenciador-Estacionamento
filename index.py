@@ -4,7 +4,7 @@ Apenas inicializa e chama o menu UI.
 """
 from dotenv import load_dotenv
 from src.utils.setup import inicializar_sistema
-from src.ui.menu import executar_menu_principal
+from src.ui.menu import executar_menu_principal 
 
 # Carrega variáveis de ambiente
 load_dotenv()
