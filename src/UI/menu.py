@@ -51,17 +51,17 @@ def executar_menu_principal(repo, estacionamento):
             menu_option("1", "Registrar Entrada")
             menu_option("2", "Registrar Saída")
             menu_option("3", "Listar / Verificar Vencidos")
-            menu_option("4", "Gerenciar Cadastros Frequentes ⭐") # <--- NOVA OPÇÃO
+            menu_option("4", "Gerenciar Cadastros Frequentes") 
             print("")
             
             print(f"{Colors.BOLD}   MORADORES{Colors.RESET}")
-            menu_option("5", "Entrada (Catraca)") # <--- Renumerado
-            menu_option("6", "Saída (Catraca)")   # <--- Renumerado
-            menu_option("7", "Gerenciar Cadastros") # <--- Renumerado
+            menu_option("5", "Entrada (Catraca)") 
+            menu_option("6", "Saída (Catraca)")   
+            menu_option("7", "Gerenciar Cadastros") 
             print("")
             
             print(f"{Colors.BOLD}   SISTEMA{Colors.RESET}")
-            menu_option("8", "Mapa Geral do Pátio") # <--- Renumerado
+            menu_option("8", "Mapa Geral do Pátio") 
             print("-" * 50)
             menu_option("0", "Sair")
 
