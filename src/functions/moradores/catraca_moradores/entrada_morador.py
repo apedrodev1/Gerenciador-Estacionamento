@@ -1,5 +1,5 @@
 from src.utils.input_handler import get_valid_input
-from src.utils.validations import validate_placa  # <--- CORREÇÃO: Usamos a validação de formato simples
+from src.utils.validations import validate_placa  
 from src.ui.components import header, show_success, show_error, show_warning
 
 def registrar_entrada_morador(repositorio):
