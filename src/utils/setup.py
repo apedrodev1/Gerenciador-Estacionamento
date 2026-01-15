@@ -5,7 +5,7 @@ Localização: src/utils/setup.py
 """
 import os
 import sys
-from src.db.repository import EstacionamentoRepository
+from src.repositories.estacionamento_repository import EstacionamentoRepository
 from src.classes.Estacionamento import Estacionamento
 from src.ui.components import show_error
 
