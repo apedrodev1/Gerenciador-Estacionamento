@@ -40,6 +40,28 @@ def validate_placa(placa_input):
     
     return None, "Placa inválida. Use o formato AAA-1234 ou Mercosul."
 
+
+# ... (conteúdo anterior de validações de formato) ...
+
+def validate_placa_unica(placa_input, placas_existentes):
+    """
+    Valida formato E unicidade da placa.
+    Args:
+        placa_input (str): A placa digitada.
+        placas_existentes (list): Lista de strings com todas as placas do banco.
+    """
+    # 1. Valida Formato
+    placa_limpa, erro_formato = validate_placa(placa_input)
+    
+    if erro_formato:
+        return None, erro_formato
+
+    # 2. Valida Unicidade
+    if placa_limpa in placas_existentes:
+        return None, f"A placa {placa_limpa} JÁ ESTÁ CADASTRADA no sistema."
+
+    return placa_limpa, None
+
 def validate_cnh(cnh_input):
     """
     Valida formato da CNH (apenas dígitos).
@@ -54,6 +76,26 @@ def validate_cnh(cnh_input):
         return None, f"A CNH deve ter 11 dígitos (você digitou {len(limpa)})."
     
     return limpa, None
+
+def validate_cnh_unica(cnh_input, cnhs_existentes):
+    """
+    Valida formato E unicidade da CNH.
+    Args:
+        cnh_input (str): A CNH digitada.
+        cnhs_existentes (list): Lista de strings com todas as CNHs do banco.
+    """
+    # 1. Valida Formato
+    cnh_limpa, erro_formato = validate_cnh(cnh_input)
+    
+    if erro_formato:
+        return None, erro_formato
+
+    # 2. Valida Unicidade
+    if cnh_limpa in cnhs_existentes:
+        return None, f"A CNH {cnh_limpa} JÁ PERTENCE a outro cadastro."
+
+    return cnh_limpa, None
+
 
 def validate_apartamento(apto_input):
     """
