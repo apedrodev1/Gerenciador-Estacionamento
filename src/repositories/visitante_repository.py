@@ -65,11 +65,28 @@ class VisitanteRepository(BaseRepository):
         cursor.execute(queries.INSERT_VISITANTE, (
             v.nome, v.placa, v.cnh, v.modelo, v.cor, data_iso, v.numero_vaga
         ))
+        # Log Automático
+        self._registrar_log(v.placa, "VISITANTE", "ENTRADA")
 
     def registrar_saida(self, id):
+        # Precisamos buscar a placa antes de deletar para poder logar!
+        # Pequena lógica extra aqui:
         cursor = self._get_cursor()
-        cursor.execute(queries.DELETE_VISITANTE, (id,))
+        
+        # 1. Descobre a placa
+        placa_temp = "DESCONHECIDA"
+        try:
+            cursor.execute("SELECT placa FROM visitantes WHERE id = ?", (id,))
+            row = cursor.fetchone()
+            if row: placa_temp = row[0]
+        except: pass
 
+        # 2. Deleta
+        cursor.execute(queries.DELETE_VISITANTE, (id,))
+        
+        # 3. Loga
+        self._registrar_log(placa_temp, "VISITANTE", "SAIDA")
+        
     def listar_ativos(self):
         """Retorna lista de visitantes NO PÁTIO."""
         cursor = self._get_cursor()

@@ -52,7 +52,12 @@ class MoradorRepository(BaseRepository):
     def registrar_entrada(self, placa):
         cursor = self._get_cursor()
         cursor.execute(queries.REGISTRAR_ENTRADA_MORADOR, (placa,))
+        # Log Automático
+        self._registrar_log(placa, "MORADOR", "ENTRADA")
 
     def registrar_saida(self, placa):
         cursor = self._get_cursor()
         cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (placa,))
+        # Log Automático
+        self._registrar_log(placa, "MORADOR", "SAIDA")
+    
