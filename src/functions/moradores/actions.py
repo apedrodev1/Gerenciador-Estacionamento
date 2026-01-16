@@ -15,28 +15,45 @@ from .helpers import solicitar_input_vaga, selecionar_morador_da_lista
 
 def adicionar_morador_form(repositorio, estacionamento):
     header("NOVO CADASTRO DE MORADOR")
+    print(f"{Colors.DIM}ℹ️  Cadastre os veículos autorizados por apartamento.{Colors.RESET}")
     
+    # Carrega validações
+    # NOTA: Não validamos mais CNH ÚNICA para moradores, pois 1 pessoa pode ter 2 carros.
     placas_ocupadas = repositorio.listar_todas_placas()
-    cnhs_ocupadas = repositorio.listar_todas_cnhs()
     
     print("\nPreencha os dados:")
-    nome, _ = get_valid_input("Nome Completo: ", validate_names)
+    nome, _ = get_valid_input("Nome do Proprietário: ", validate_names)
     apto, _ = get_valid_input("Apartamento: ", validate_apartamento)
+    
+    # Valida apenas placa única (carro não pode ser duplicado)
     placa, _ = get_valid_input("Placa: ", lambda x: validate_placa_unica(x, placas_ocupadas))
-    cnh, _ = get_valid_input("CNH: ", lambda x: validate_cnh_unica(x, cnhs_ocupadas))
+    
+    # CNH agora é livre (apenas formato)
+    cnh, _ = get_valid_input("CNH (Responsável): ", validate_cnh)
+    
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
 
-    vaga_id = solicitar_input_vaga(estacionamento)
-
-    novo_morador = Morador(nome=nome, apartamento=apto, placa=placa, cnh=cnh, 
-                           modelo=modelo, cor=cor, vaga_id=vaga_id)
+    # NÃO PEDIMOS MAIS VAGA FIXA! A vaga é "flutuante" baseada no Apto.
+    # Passamos vaga_id=None ou o próprio número do apto se quiser registrar visualmente.
+    
+    novo_morador = Morador(
+        nome=nome, 
+        apartamento=apto, 
+        placa=placa, 
+        cnh=cnh, 
+        modelo=modelo, 
+        cor=cor, 
+        vaga_id=None # Sem vaga fixa presa
+    )
+    
     try:
         repositorio.adicionar_morador(novo_morador)
-        show_success(f"Morador {nome} cadastrado com sucesso!")
+        show_success(f"Veículo de {nome} (Apto {apto}) cadastrado!")
+        print(f"{Colors.DIM}Este veículo agora conta na cota do apartamento.{Colors.RESET}")
+        input("Pressione Enter...")
     except Exception as e:
         show_error(f"Erro ao salvar: {e}")
-
 def remover_morador_form(repositorio):
     morador = selecionar_morador_da_lista(repositorio, acao_titulo="REMOVER")
     if not morador: return 
