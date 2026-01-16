@@ -15,6 +15,21 @@ class MoradorRepository(BaseRepository):
             morador.modelo, morador.cor, morador.apartamento, morador.vaga_id
         ))
 
+    def contar_carros_no_apto(self, numero_apto):
+        """
+        Conta quantos veículos deste apartamento estão atualmente estacionados (estacionado=1).
+        Usado para verificar a cota de vagas.
+        """
+        cursor = self._get_cursor()
+        try:
+            # Conta registros onde apartamento bate E estacionado é verdadeiro
+            query = "SELECT COUNT(*) FROM moradores WHERE apartamento = ? AND estacionado = 1"
+            cursor.execute(query, (numero_apto,))
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(f"❌ Erro ao contar carros do apto: {e}")
+            return 0
+
     def listar(self):
         cursor = self._get_cursor()
         lista = []
