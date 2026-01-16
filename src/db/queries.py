@@ -135,8 +135,8 @@ DELETE_VISITANTE_CADASTRO = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 # ==============================================================================
 # 5. RELATÓRIOS E MAPAS
 # ==============================================================================
-
 # Une as duas tabelas para mostrar o mapa completo do pátio
+
 SELECT_OCUPACAO_TOTAL = """
 SELECT numero_vaga as vaga, 'Visitante' as tipo, nome, placa, modelo, cor 
 FROM visitantes
@@ -145,4 +145,39 @@ SELECT vaga_id as vaga, 'Morador' as tipo, nome, placa, modelo, cor
 FROM moradores 
 WHERE estacionado = 1
 ORDER BY vaga ASC;
+"""
+
+# ==============================================================================
+# 6. AUDITORIA / HISTÓRICO 
+# ==============================================================================
+# Cria a tabela de registro de entradas e saidas 
+
+CREATE_TABLE_HISTORICO = """
+CREATE TABLE IF NOT EXISTS historico_movimentacao (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    data_hora TEXT NOT NULL,
+    placa TEXT NOT NULL,
+    tipo_veiculo TEXT NOT NULL,  -- 'MORADOR' ou 'VISITANTE'
+    tipo_evento TEXT NOT NULL    -- 'ENTRADA' ou 'SAIDA'
+);
+"""
+
+INSERT_HISTORICO = """
+INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento)
+VALUES (?, ?, ?, ?)
+"""
+
+# --- LEITURA DE HISTÓRICO ---
+SELECT_HISTORICO_GERAL = """
+SELECT data_hora, placa, tipo_veiculo, tipo_evento 
+FROM historico_movimentacao 
+ORDER BY id DESC 
+LIMIT 50;
+"""
+
+SELECT_HISTORICO_POR_PLACA = """
+SELECT data_hora, placa, tipo_veiculo, tipo_evento 
+FROM historico_movimentacao 
+WHERE placa = ? 
+ORDER BY id DESC;
 """
