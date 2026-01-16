@@ -1,0 +1,15 @@
+# Arquivos de Ambiente (Segredos)
+.env
+
+# Cache do Python (Lixo)
+__pycache__/
+*.py[cod]
+.cpython
+.pyc
+
+# Banco de Dados (Se for local e não quiser subir)
+*.db
+*.sqlite3
+
+# Logs
+*.log
