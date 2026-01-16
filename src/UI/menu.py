@@ -11,8 +11,10 @@ from src.functions.moradores.catraca_moradores.saida_morador import registrar_sa
 from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
 from src.functions.visitantes.catraca_visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.catraca_visitantes.registrar_saida import registrar_saida_visitante
-from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
 from src.functions.visitantes.gerenciar_visitantes import menu_gerenciar_visitantes
+from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
+from src.functions.relatorios.exibir_relatorios import menu_relatorios 
+
 
 def exibir_dashboard_topo(estacionamento, repo):
     """Monta o cabeçalho dinâmico."""
@@ -62,6 +64,7 @@ def executar_menu_principal(repo, estacionamento):
             
             print(f"{Colors.BOLD}   SISTEMA{Colors.RESET}")
             menu_option("8", "Mapa Geral do Pátio") 
+            menu_option("9", "Relatórios e Auditoria")
             print("-" * 50)
             menu_option("0", "Sair")
 
@@ -84,9 +87,11 @@ def executar_menu_principal(repo, estacionamento):
                 registrar_saida_morador(repo)
             elif opcao == '7':
                 menu_gerenciar_moradores(repo, estacionamento)
-            
+
             elif opcao == '8':
                 exibir_mapa_estacionamento(repo)
+            elif opcao == '9':
+                menu_relatorios(repo)
             
             elif opcao == '0':
                 clear_screen()
