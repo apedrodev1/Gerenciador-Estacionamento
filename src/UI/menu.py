@@ -82,7 +82,7 @@ def executar_menu_principal(repo, estacionamento):
                 menu_gerenciar_visitantes(repo) 
             
             elif opcao == '5':
-                registrar_entrada_morador(repo)
+                registrar_entrada_morador(repo, estacionamento)
             elif opcao == '6':
                 registrar_saida_morador(repo)
             elif opcao == '7':
