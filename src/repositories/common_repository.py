@@ -18,6 +18,7 @@ class CommonRepository(BaseRepository):
             manager.execute(queries.CREATE_TABLE_MORADORES)
             manager.execute(queries.CREATE_TABLE_VISITANTES)
             manager.execute(queries.CREATE_TABLE_VISITANTES_CADASTRO)
+            manager.execute(queries.CREATE_TABLE_HISTORICO)
             
             # Se abrimos manualmente aqui, o __exit__ do manager cuidaria do commit/close
             # mas como é execute direto, está ok.
@@ -83,3 +84,25 @@ class CommonRepository(BaseRepository):
                 })
             return lista
         except sqlite3.Error: return []
+
+    # --- RELATÓRIOS / HISTÓRICO ---
+    
+    def buscar_historico_geral(self):
+        """Retorna as últimas 50 movimentações."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_HISTORICO_GERAL)
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Erro ao buscar histórico: {e}")
+            return []
+
+    def buscar_historico_por_placa(self, placa):
+        """Retorna todo o histórico de uma placa específica."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_HISTORICO_POR_PLACA, (placa,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Erro ao buscar histórico da placa: {e}")
+            return []
