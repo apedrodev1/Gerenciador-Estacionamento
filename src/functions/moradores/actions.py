@@ -1,42 +1,38 @@
 """
 Ações de CRUD (Create, Update, Delete) para Moradores.
 Contém a lógica dos formulários.
+Localização: src/functions/moradores/actions.py
 """
 from src.classes.Morador import Morador
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import (
-    validate_names, validate_placa, validate_cnh, validate_apartamento,
+    validate_names, validate_placa, validate_cnh, validate_apartamento, 
     validate_yes_no, validate_placa_unica, validate_cnh_unica
 )
 from src.ui.colors import Colors
 from src.ui.components import header, menu_option, show_success, show_error, show_warning
-# Importa os helpers que acabamos de criar
-from .helpers import solicitar_input_vaga, selecionar_morador_da_lista
+
+# CORREÇÃO: Removemos 'solicitar_input_vaga' que não existe mais
+from .helpers import selecionar_morador_da_lista
 
 def adicionar_morador_form(repositorio, estacionamento):
     header("NOVO CADASTRO DE MORADOR")
     print(f"{Colors.DIM}ℹ️  Cadastre os veículos autorizados por apartamento.{Colors.RESET}")
     
-    # Carrega validações
-    # NOTA: Não validamos mais CNH ÚNICA para moradores, pois 1 pessoa pode ter 2 carros.
     placas_ocupadas = repositorio.listar_todas_placas()
     
     print("\nPreencha os dados:")
     nome, _ = get_valid_input("Nome do Proprietário: ", validate_names)
     apto, _ = get_valid_input("Apartamento: ", validate_apartamento)
     
-    # Valida apenas placa única (carro não pode ser duplicado)
+    # Valida apenas placa única
     placa, _ = get_valid_input("Placa: ", lambda x: validate_placa_unica(x, placas_ocupadas))
     
-    # CNH agora é livre (apenas formato)
     cnh, _ = get_valid_input("CNH (Responsável): ", validate_cnh)
-    
     modelo = input("Modelo (opcional): ")
     cor = input("Cor (opcional): ")
 
-    # NÃO PEDIMOS MAIS VAGA FIXA! A vaga é "flutuante" baseada no Apto.
-    # Passamos vaga_id=None ou o próprio número do apto se quiser registrar visualmente.
-    
+    # Criação sem vaga fixa
     novo_morador = Morador(
         nome=nome, 
         apartamento=apto, 
@@ -44,7 +40,7 @@ def adicionar_morador_form(repositorio, estacionamento):
         cnh=cnh, 
         modelo=modelo, 
         cor=cor, 
-        vaga_id=None # Sem vaga fixa presa
+        vaga_id=None 
     )
     
     try:
@@ -54,6 +50,7 @@ def adicionar_morador_form(repositorio, estacionamento):
         input("Pressione Enter...")
     except Exception as e:
         show_error(f"Erro ao salvar: {e}")
+
 def remover_morador_form(repositorio):
     morador = selecionar_morador_da_lista(repositorio, acao_titulo="REMOVER")
     if not morador: return 
