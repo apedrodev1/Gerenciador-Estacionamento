@@ -1,6 +1,7 @@
 """
 Repositório Especializado: Moradores.
 Lida apenas com a tabela 'moradores'.
+Localização: src/repositories/morador_repository.py
 """
 from src.repositories.base_repository import BaseRepository
 from src.db import queries
@@ -10,25 +11,11 @@ class MoradorRepository(BaseRepository):
     
     def adicionar(self, morador: Morador):
         cursor = self._get_cursor()
+        # Nota: Passamos vaga_id como None se não existir, ou o valor que tiver
         cursor.execute(queries.INSERT_MORADOR, (
             morador.nome, morador.placa, morador.cnh, 
             morador.modelo, morador.cor, morador.apartamento, morador.vaga_id
         ))
-
-    def contar_carros_no_apto(self, numero_apto):
-        """
-        Conta quantos veículos deste apartamento estão atualmente estacionados (estacionado=1).
-        Usado para verificar a cota de vagas.
-        """
-        cursor = self._get_cursor()
-        try:
-            # Conta registros onde apartamento bate E estacionado é verdadeiro
-            query = "SELECT COUNT(*) FROM moradores WHERE apartamento = ? AND estacionado = 1"
-            cursor.execute(query, (numero_apto,))
-            return cursor.fetchone()[0]
-        except Exception as e:
-            print(f"❌ Erro ao contar carros do apto: {e}")
-            return 0
 
     def listar(self):
         cursor = self._get_cursor()
@@ -75,4 +62,25 @@ class MoradorRepository(BaseRepository):
         cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (placa,))
         # Log Automático
         self._registrar_log(placa, "MORADOR", "SAIDA")
-    
+
+    # --- MÉTODOS NOVOS (COTA E CONTAGEM) ---
+
+    def contar_carros_no_apto(self, numero_apto):
+        """Conta quantos carros deste apartamento estão NO PÁTIO (estacionado=1)."""
+        cursor = self._get_cursor()
+        try:
+            query = "SELECT COUNT(*) FROM moradores WHERE apartamento = ? AND estacionado = 1"
+            cursor.execute(query, (numero_apto,))
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(f"❌ Erro ao contar carros do apto: {e}")
+            return 0
+
+    def contar_moradores_estacionados(self):
+        """Conta o total GERAL de moradores dentro do estacionamento."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM moradores WHERE estacionado = 1")
+            return cursor.fetchone()[0]
+        except Exception:
+            return 0
