@@ -48,6 +48,7 @@ class EstacionamentoRepository:
     # Moradores (Redireciona para self.moradores)
     def adicionar_morador(self, m): return self.moradores.adicionar(m)
     def listar_moradores(self): return self.moradores.listar()
+    def contar_moradores_estacionados(self): return self.moradores.contar_moradores_estacionados()
     def buscar_morador_por_placa(self, p): return self.moradores.buscar_por_placa(p)
     def atualizar_morador(self, m): return self.moradores.atualizar(m)
     def remover_morador(self, id): return self.moradores.remover(id)
