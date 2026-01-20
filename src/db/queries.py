@@ -138,13 +138,29 @@ DELETE_VISITANTE_CADASTRO = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 # Une as duas tabelas para mostrar o mapa completo do pátio
 
 SELECT_OCUPACAO_TOTAL = """
-SELECT numero_vaga as vaga, 'Visitante' as tipo, nome, placa, modelo, cor 
-FROM visitantes
-UNION ALL
-SELECT vaga_id as vaga, 'Morador' as tipo, nome, placa, modelo, cor 
+SELECT 
+    vaga_id as vaga, 
+    'MORADOR' as tipo, 
+    nome, 
+    placa, 
+    modelo, 
+    cor,
+    apartamento
 FROM moradores 
 WHERE estacionado = 1
-ORDER BY vaga ASC;
+
+UNION ALL
+
+SELECT 
+    numero_vaga as vaga, 
+    'VISITANTE' as tipo, 
+    nome, 
+    placa, 
+    modelo, 
+    cor,
+    NULL as apartamento
+FROM visitantes
+ORDER BY tipo, vaga;
 """
 
 # ==============================================================================
