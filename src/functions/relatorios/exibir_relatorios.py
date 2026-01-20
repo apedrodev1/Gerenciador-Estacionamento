@@ -5,7 +5,7 @@ Localização: src/functions/relatorios/exibir_relatorios.py
 from datetime import datetime
 from src.ui.tables import criar_tabela
 from src.ui.colors import Colors
-from src.ui.components import header, show_warning
+from src.ui.components import header, show_warning, menu_option
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa
 
@@ -20,17 +20,13 @@ def _renderizar_tabela_historico(dados, titulo="HISTÓRICO"):
         # row = (data_iso, placa, tipo, evento)
         data_iso, placa, tipo, evento = row
         
-        # Formatar Data
         try:
             dt = datetime.fromisoformat(data_iso)
             data_fmt = dt.strftime("%d/%m/%Y %H:%M")
         except:
             data_fmt = data_iso
 
-        # Colorir o Evento
         evento_fmt = f"[green]{evento}[/green]" if evento == "ENTRADA" else f"[red]{evento}[/red]"
-        
-        # Colorir o Tipo
         tipo_fmt = f"[cyan]{tipo}[/cyan]" if tipo == "MORADOR" else f"[yellow]{tipo}[/yellow]"
 
         linhas_formatadas.append([data_fmt, placa, tipo_fmt, evento_fmt])
@@ -57,13 +53,13 @@ def relatorio_por_placa(repositorio):
     _renderizar_tabela_historico(dados, titulo=f"EXTRATO: {placa}")
 
 def menu_relatorios(repositorio):
-    """Sub-menu de relatórios."""
+    """Sub-menu de relatórios padronizado."""
     while True:
         header("RELATÓRIOS E AUDITORIA 📋")
-        print("1. Histórico Geral (Últimos 50)")
-        print("2. Filtrar por Placa")
+        menu_option("1", "Histórico Geral (Últimos 50)")
+        menu_option("2", "Filtrar por Placa")
         print("-" * 30)
-        print("0. Voltar")
+        menu_option("0", "Voltar")
         
         opcao = input(f"\n{Colors.CYAN}➤ Opção: {Colors.RESET}").strip()
         
