@@ -4,7 +4,6 @@ Gerencia a capacidade, contagem de vagas e regras de negócio de limites.
 Localização: src/classes/Estacionamento.py
 """
 class Estacionamento:
-    # CORREÇÃO 1: Adicionado tempo_limite_minutos aqui
     def __init__(self, nome="Estacionamento Principal", capacidade_visitantes=20, capacidade_total=100, tempo_limite_minutos=120):
         self.nome = nome
         self.capacidade_visitantes = int(capacidade_visitantes)
