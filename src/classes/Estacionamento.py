@@ -1,75 +1,64 @@
 """
-Classe Estacionamento.
-Gerencia a capacidade, contagem de vagas e regras de negócio de limites.
-Localização: src/classes/Estacionamento.py
+Classe Estacionamento (Final)
+Responsabilidade: Gerenciar limites físicos, regras de tempo e zonas.
+Não acessa banco de dados.
 """
+from datetime import datetime
+
 class Estacionamento:
-    def __init__(self, nome="Estacionamento Principal", capacidade_visitantes=20, capacidade_total=100, tempo_limite_minutos=120):
+    def __init__(self, nome="Estacionamento Principal"):
         self.nome = nome
-        self.capacidade_visitantes = int(capacidade_visitantes)
-        self.capacidade_total = int(capacidade_total)
-        self.tempo_limite_minutos = int(tempo_limite_minutos) # CORREÇÃO: Salvamos a config
         
-        # --- NOVA REGRA: Cota por Apartamento ---
-        self.limite_carros_por_apto = 2  
+        # --- ZONAS E CAPACIDADES ---
+        # Zona A (Visitantes): Vagas rotativas 01-20
+        self.capacidade_visitantes = 20
         
-        # Cache de ocupação
-        self.ocupacao_atual = 0
+        # Zona B (Moradores): Vagas garantidas 21-70
+        self.capacidade_moradores = 50 
+        
+        # Capacidade Total (Apenas informativo)
+        self.capacidade_total = self.capacidade_visitantes + self.capacidade_moradores
+        
+        # Regras de Tempo
+        self.tempo_limite_visitante_minutos = 120
+        
+        # Cache de estado (Visitantes)
+        self._ocupacao_visitantes = 0
+
+    # --- PROPRIEDADES (Visitantes) ---
 
     @property
-    def vagas_disponiveis(self):
-        """Retorna quantas vagas de VISITANTE ainda restam."""
-        return self.capacidade_visitantes - self.ocupacao_atual
+    def vagas_visitantes_disponiveis(self):
+        """Calcula vagas restantes na Zona A."""
+        return self.capacidade_visitantes - self._ocupacao_visitantes
 
     @property
-    def esta_lotado(self):
-        """Verifica se a área de visitantes está cheia."""
-        return self.vagas_disponiveis <= 0
+    def visitante_esta_lotado(self):
+        """Booleano para travar catraca de visitante."""
+        return self.vagas_visitantes_disponiveis <= 0
+
+    # --- MÉTODOS DE REGRA DE NEGÓCIO ---
 
     def alocar_vaga_visitante(self, vagas_ocupadas_set):
         """
-        Encontra a primeira vaga livre (1..Capacidade) para visitantes.
+        Descobre qual vaga (1-20) está livre.
+        Retorna: int (ex: 5) ou None.
         """
         for i in range(1, self.capacidade_visitantes + 1):
+            # Converte para string pois o set geralmente vem do banco como strings
             if str(i) not in vagas_ocupadas_set:
                 return i
         return None
 
-    def calcular_tempo_permanencia(self, visitante):
-        """Retorna o tempo em minutos que o visitante está no pátio."""
-        from datetime import datetime
+    def verificar_ticket_vencido(self, hora_entrada):
+        """
+        Calcula se o tempo de permanência excedeu o limite.
+        """
+        if not hora_entrada:
+            return False
+            
         agora = datetime.now()
-        delta = agora - visitante.entrada
-        return delta.total_seconds() / 60
-
-    # CORREÇÃO 2: Usamos self.tempo_limite_minutos em vez de passar parâmetro opcional fixo
-    def verificar_ticket_vencido(self, visitante):
-        """Retorna True se o visitante excedeu o tempo limite configurado."""
-        tempo = self.calcular_tempo_permanencia(visitante)
-        return tempo > self.tempo_limite_minutos
-
-    # --- NOVOS MÉTODOS DE VALIDAÇÃO (Regra de Negócio) ---
-
-    def validar_cota_morador(self, morador, repositorio):
-        """
-        Verifica se o apartamento do morador ainda tem 'crédito' para entrar.
-        """
-        # 1. Consulta o banco
-        qtd_no_patio = repositorio.moradores.contar_carros_no_apto(morador.apartamento)
+        delta = agora - hora_entrada
+        minutos = delta.total_seconds() / 60
         
-        # 2. Verifica limite
-        if qtd_no_patio >= self.limite_carros_por_apto:
-            return False, (
-                f"⛔ LIMITE ATINGIDO! O Apto {morador.apartamento} já possui {qtd_no_patio} carros no pátio.\n"
-                f"   Limite permitido: {self.limite_carros_por_apto} veículos simultâneos."
-            )
-        
-        # 3. Calcula saldo
-        saldo = self.limite_carros_por_apto - qtd_no_patio
-        restantes_apos_entrar = saldo - 1
-        
-        return True, (
-            f"✅ Entrada Liberada!\n"
-            f"   Cota do Apto {morador.apartamento}: {qtd_no_patio}/{self.limite_carros_por_apto} em uso.\n"
-            f"   Vagas restantes para este apto: {restantes_apos_entrar}"
-        )
+        return minutos > self.tempo_limite_visitante_minutos
