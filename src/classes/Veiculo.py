@@ -1,104 +1,108 @@
 """
-Contém a classe base Veiculo.
-
-Esta classe serve como pai para Morador e Visitante, centralizando
-os dados comuns de qualquer veículo/motorista (Placa, CNH, Modelo, etc.).
+Classe Veiculo (Entidade Relacional Universal)
+Responsabilidade: Representar o automóvel físico.
+Vínculo: Possui campos explícitos para ligar a diferentes tipos de proprietários (Morador, Visitante, etc).
 """
-
-from src.utils.validations import validate_placa, validate_cnh, validate_names
+from src.utils.validations import validate_placa
 
 class Veiculo:
-    """
-    Classe base para todos os veículos (Moradores e Visitantes).
-    
-    Attributes:
-        _id (int): ID do banco de dados (pode ser None se ainda não salvo).
-        _nome (str): Nome do proprietário/motorista.
-        _placa (str): Placa do veículo.
-        _cnh (str): CNH do motorista.
-        _modelo (str): Modelo do carro (ex: "Fiat Uno").
-        _cor (str): Cor do carro.
-    """
-
-    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor=""):
-        """
-        Inicializa os dados básicos do veículo.
-        """
+    def __init__(self, id=None, placa="", modelo="", cor="", morador_id=None, visitante_id=None, estacionado=False):
         self._id = id
         
-        # Setters validarão os dados imediatamente
-        self.nome = nome
+        # --- Atributos Físicos ---
         self.placa = placa
-        self.cnh = cnh
         self.modelo = modelo
         self.cor = cor
+        
+        # --- Vínculos de Propriedade (Explícitos) ---
+        # Permite integridade referencial no banco e expansão futura (ex: funcionario_id)
+        self.morador_id = morador_id
+        self.visitante_id = visitante_id
+        
+        # --- Estado ---
+        self.estacionado = estacionado
 
-    # --- ID (Somente Leitura, gerenciado pelo DB) ---
+    # --- ID (Leitura) ---
     @property
     def id(self):
         return self._id
 
-    # --- Nome (Validado) ---
-    @property
-    def nome(self):
-        return self._nome
-
-    @nome.setter
-    def nome(self, valor):
-        val, erro = validate_names(valor)
-        if erro:
-            raise ValueError(f"Nome inválido: {erro}")
-        self._nome = val
-
-    # --- Placa (Validada) ---
+    # --- PLACA (Com Validação) ---
     @property
     def placa(self):
         return self._placa
 
     @placa.setter
     def placa(self, valor):
-        val, erro = validate_placa(valor) 
+        if not valor:
+            self._placa = ""
+            return
+            
+        val, erro = validate_placa(valor)
         if erro:
             raise ValueError(f"Placa inválida: {erro}")
         self._placa = val
 
-    # --- CNH (Validada) ---
-    @property
-    def cnh(self):
-        return self._cnh
-
-    @cnh.setter
-    def cnh(self, valor):
-        # Assumindo que criaremos validate_cnh
-        val, erro = validate_cnh(valor)
-        if erro:
-            raise ValueError(f"CNH inválida: {erro}")
-        self._cnh = val
-
-    # --- Dados Simples (Sem validação complexa por enquanto) ---
+    # --- MODELO (Formatação) ---
     @property
     def modelo(self):
         return self._modelo
 
     @modelo.setter
     def modelo(self, valor):
-        self._modelo = str(valor).strip().upper()
+        self._modelo = str(valor).strip().upper() if valor else ""
 
+    # --- COR (Formatação) ---
     @property
     def cor(self):
         return self._cor
 
     @cor.setter
     def cor(self, valor):
-        self._cor = str(valor).strip().upper()
+        self._cor = str(valor).strip().upper() if valor else ""
+
+    # --- VÍNCULOS (Validação de Tipo) ---
+    @property
+    def morador_id(self):
+        return self._morador_id
+
+    @morador_id.setter
+    def morador_id(self, valor):
+        if valor is not None and not isinstance(valor, int):
+            raise ValueError("ID do morador deve ser um número inteiro.")
+        self._morador_id = valor
+
+    @property
+    def visitante_id(self):
+        return self._visitante_id
+
+    @visitante_id.setter
+    def visitante_id(self, valor):
+        if valor is not None and not isinstance(valor, int):
+            raise ValueError("ID do visitante deve ser um número inteiro.")
+        self._visitante_id = valor
+
+    # --- ESTADO ---
+    @property
+    def estacionado(self):
+        return self._estacionado
+
+    @estacionado.setter
+    def estacionado(self, valor):
+        self._estacionado = bool(valor)
 
     def to_dict(self):
-        """Retorna um dicionário com os dados (útil para exportação/DB)."""
+        """Retorna dicionário completo para persistência."""
         return {
             "id": self.id,
-            "nome": self.nome,
             "placa": self.placa,
-            "cnh": self.cnh,
             "modelo": self.modelo,
-            "cor": self.cor
+            "cor": self.cor,
+            "morador_id": self.morador_id,
+            "visitante_id": self.visitante_id,
+            "estacionado": self.estacionado
         }
+
+    def __repr__(self):
+        dono = f"Morador:{self.morador_id}" if self.morador_id else f"Visitante:{self.visitante_id}"
+        return f"<Veiculo {self.placa} | {dono}>"
