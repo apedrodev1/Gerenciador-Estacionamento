@@ -1,54 +1,64 @@
 """
-Contém a classe Morador, que herda de Veiculo.
+Classe Morador (Entidade)
+Responsabilidade: Representar a Pessoa e seu Vínculo Imobiliário (Apartamento).
+Regra de Negócio: As vagas são calculadas matematicamente baseadas no Apartamento.
 """
 from src.utils.validations import validate_apartamento
-from src.classes.Veiculo import Veiculo
 
-class Morador(Veiculo):
-    """
-    Representa um morador do condomínio.
-    
-    Herda todos os atributos de veículo e adiciona a Vaga vinculada e Apartamento.
-    """
+class Morador:
+    def __init__(self, id=None, nome="", cnh="", apartamento=None):
+        self.id = id
+        self.nome = nome
+        self.cnh = cnh
+        # Ao atribuir aqui, o @apartamento.setter já é acionado para validar
+        self.apartamento = apartamento 
 
-    def __init__(self, id=None, nome="", placa="", cnh="", modelo="", cor="", apartamento="", vaga_id=None, estacionado=False):
-        # Chama o construtor do Pai (Veiculo) para lidar com a parte "comum"
-        super().__init__(id, nome, placa, cnh, modelo, cor)
-        
-        self.apartamento = apartamento
-        self.vaga_id = vaga_id
-        self.estacionado = estacionado
-
-    # --- Apartamento ---
+    # --- PROPRIEDADE: APARTAMENTO (Com Validação) ---
     @property
     def apartamento(self):
         return self._apartamento
 
     @apartamento.setter
     def apartamento(self, valor):
-        val, erro = validate_apartamento(valor)
-        if erro:
-            raise ValueError(f"Erro no Apartamento: {erro}")
-        self._apartamento = val
+        """
+        Valida e define o apartamento.
+        Se mudar o apartamento, as vagas calculadas mudarão automaticamente.
+        """
+        if valor is None:
+            self._apartamento = None
+            return
 
-    # --- Vaga (Agora aceita TEXTO para lógica "10-1") ---
+        val_formatado, erro = validate_apartamento(valor)
+        
+        if erro:
+            raise ValueError(f"Erro ao definir apartamento: {erro}")
+        
+        # Salvamos como inteiro para poder fazer a conta das vagas
+        self._apartamento = int(val_formatado)
+
+    # --- PROPRIEDADE CALCULADA: VAGAS ---
     @property
-    def vaga_id(self):
-        return self._vaga_id
-    
-    @vaga_id.setter
-    def vaga_id(self, valor):
-        # Se for vazio ou None, fica None
-        if valor is None or valor == "":
-            self._vaga_id = None
-        else:
-            # Aceita string e converte para maiúsculo (ex: "10-1")
-            self._vaga_id = str(valor).strip().upper()
+    def vagas_vinculadas(self):
+        """
+        Calcula as vagas baseadas no número do apartamento.
+        Regra: Apto N -> Vagas (N*2)-1 e (N*2)
+        Ex: Apto 10 -> M19 e M20
+        """
+        if self._apartamento is None:
+            return []
+
+        vaga2 = self._apartamento * 2
+        vaga1 = vaga2 - 1
+        return [f"M{vaga1}", f"M{vaga2}"]
 
     def to_dict(self):
-        """Sobrescreve to_dict para incluir apartamento e vaga."""
-        data = super().to_dict() # Pega os dados do pai
-        data['apartamento'] = self.apartamento
-        data['vaga_id'] = self.vaga_id
-        data['estacionado'] = self.estacionado
-        return data
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "cnh": self.cnh,
+            "apartamento": self.apartamento,
+            "vagas_direito": self.vagas_vinculadas # Retorna a lista calculada
+        }
+
+    def __repr__(self):
+        return f"<Morador {self.nome} - Apto {self.apartamento}>"
