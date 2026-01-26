@@ -1,16 +1,16 @@
 """
 Classe Base para Repositórios.
-Gerencia o acesso ao cursor e conexão compartilhada.
+Responsabilidade: Gerenciar a injeção de dependência da conexão.
+Nota: Não contém lógica de negócio (Logs movidos para VeiculoRepository).
+Localização: src/repositories/base_repository.py
 """
-from datetime import datetime
 from src.utils.db_connection import DatabaseManager
-from src.db import queries 
 
 class BaseRepository:
     def __init__(self, db_manager: DatabaseManager):
         """
         Recebe o gerenciador de banco.
-        A conexão (self.conn) será injetada pelo Facade quando entrarmos no 'with'.
+        A conexão (self.conn) será injetada pelo Facade (EstacionamentoRepository).
         """
         self.db_manager = db_manager
         self.conn = None
@@ -21,22 +21,12 @@ class BaseRepository:
 
     def _get_cursor(self):
         """
-        Retorna o cursor da conexão ativa (transação) 
-        ou cria uma conexão temporária (leitura rápida).
+        Retorna o cursor da conexão ativa.
         """
         if self.conn:
             return self.conn.cursor()
-        # Se não houver transação aberta, abre uma rápida e fecha (para leituras simples)
-        return self.db_manager.__enter__().cursor()
-    
-    def _registrar_log(self, placa, tipo_veiculo, tipo_evento):
-        """
-        Grava uma linha no histórico silenciosamente.
-        Não deve parar o sistema se der erro (try/except seguro).
-        """
-        try:
-            cursor = self._get_cursor()
-            agora = datetime.now().isoformat()
-            cursor.execute(queries.INSERT_HISTORICO, (agora, placa, tipo_veiculo, tipo_evento))
-        except Exception as e:
-            print(f"⚠️ Erro ao gravar log de auditoria: {e}")
+        
+        # Alteração de Segurança: 
+        # Removemos a criação automática de conexão "fantasma" para forçar 
+        # o uso correto do padrão Facade (with repository:).
+        raise RuntimeError("Erro Crítico: Tentativa de acessar o banco sem conexão ativa. Envolva a chamada em um bloco 'with repository:'.")
