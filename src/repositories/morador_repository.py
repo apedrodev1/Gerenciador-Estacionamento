@@ -1,6 +1,7 @@
 """
 Repositório Especializado: Moradores.
-Lida apenas com a tabela 'moradores'.
+Lida apenas com a tabela 'moradores' (Dados Pessoais).
+Não manipula veículos ou catraca.
 Localização: src/repositories/morador_repository.py
 """
 from src.repositories.base_repository import BaseRepository
@@ -10,77 +11,99 @@ from src.classes.Morador import Morador
 class MoradorRepository(BaseRepository):
     
     def adicionar(self, morador: Morador):
+        """
+        Salva um novo morador no banco.
+        Retorna: O ID (int) gerado pelo banco de dados.
+        """
         cursor = self._get_cursor()
-        # Nota: Passamos vaga_id como None se não existir, ou o valor que tiver
         cursor.execute(queries.INSERT_MORADOR, (
-            morador.nome, morador.placa, morador.cnh, 
-            morador.modelo, morador.cor, morador.apartamento, morador.vaga_id
+            morador.nome, 
+            morador.cnh, 
+            morador.apartamento
         ))
+        # Importante: Retornamos o ID para vincular o veículo em seguida
+        return cursor.lastrowid
 
     def listar(self):
+        """Retorna lista de objetos Morador."""
         cursor = self._get_cursor()
         lista = []
         try:
             cursor.execute(queries.SELECT_ALL_MORADORES)
             for row in cursor.fetchall():
-                id_db, nome, placa, cnh, modelo, cor, apto, vaga, est_int = row
-                m = Morador(id=id_db, nome=nome, placa=placa, cnh=cnh,
-                            modelo=modelo, cor=cor, apartamento=apto, vaga_id=vaga, estacionado=bool(est_int))
+                # Row: (id, nome, cnh, apartamento)
+                m = Morador(
+                    id=row[0], 
+                    nome=row[1], 
+                    cnh=row[2], 
+                    apartamento=row[3]
+                )
                 lista.append(m)
             return lista
-        except Exception: return []
+        except Exception as e:
+            print(f"Erro ao listar moradores: {e}")
+            return []
 
-    def buscar_por_placa(self, placa):
+    def buscar_por_id(self, id_morador):
+        """Busca um morador específico pelo ID."""
         cursor = self._get_cursor()
-        cursor.execute(queries.SELECT_MORADOR_BY_PLACA, (placa,))
+        cursor.execute(queries.SELECT_MORADOR_BY_ID, (id_morador,))
         row = cursor.fetchone()
+        
         if row:
-            return Morador(id=row[0], nome=row[1], placa=row[2], cnh=row[3],
-                           modelo=row[4], cor=row[5], apartamento=row[6], 
-                           vaga_id=row[7], estacionado=bool(row[8]))
+            return Morador(
+                id=row[0], 
+                nome=row[1], 
+                cnh=row[2], 
+                apartamento=row[3]
+            )
         return None
 
+    def buscar_por_apartamento(self, numero_apto):
+        """
+        Retorna uma lista de Moradores vinculados a este apartamento.
+        Útil para saber quem é o dono atual do imóvel.
+        """
+        cursor = self._get_cursor()
+        # Nota: A query SELECT_MORADORES_BY_APTO precisa existir no queries.py
+        # Vou assumir que ela é: "SELECT * FROM moradores WHERE apartamento = ?"
+        cursor.execute(queries.SELECT_MORADORES_BY_APTO, (int(numero_apto),))
+        
+        lista = []
+        for row in cursor.fetchall():
+            m = Morador(id=row[0], nome=row[1], cnh=row[2], apartamento=row[3])
+            lista.append(m)
+        return lista
+
+    def listar_apartamentos_ocupados(self):
+        """
+        Retorna um SET com todos os números de apartamentos que já possuem cadastro.
+        Ex: {101, 102, 504}
+        Similar ao listar_todas_cnhs(), usado para validação rápida.
+        """
+        cursor = self._get_cursor()
+        try:
+            cursor.execute("SELECT DISTINCT apartamento FROM moradores")
+            # Retorna um conjunto de inteiros
+            return {row[0] for row in cursor.fetchall()}
+        except Exception:
+            return set()
+
     def atualizar(self, morador: Morador):
+        """Atualiza apenas os dados pessoais e endereço."""
         cursor = self._get_cursor()
         cursor.execute(queries.UPDATE_MORADOR, (
-            morador.nome, morador.placa, morador.cnh, morador.modelo, 
-            morador.cor, morador.apartamento, morador.vaga_id, morador.id
+            morador.nome, 
+            morador.cnh, 
+            morador.apartamento, 
+            morador.id
         ))
 
     def remover(self, id):
+        """
+        Remove o morador.
+        Nota: O banco está configurado com CASCADE, então 
+        os veículos deste morador serão apagados automaticamente.
+        """
         cursor = self._get_cursor()
         cursor.execute(queries.DELETE_MORADOR, (id,))
-
-    def registrar_entrada(self, placa):
-        cursor = self._get_cursor()
-        cursor.execute(queries.REGISTRAR_ENTRADA_MORADOR, (placa,))
-        # Log Automático
-        self._registrar_log(placa, "MORADOR", "ENTRADA")
-
-    def registrar_saida(self, placa):
-        cursor = self._get_cursor()
-        cursor.execute(queries.REGISTRAR_SAIDA_MORADOR, (placa,))
-        # Log Automático
-        self._registrar_log(placa, "MORADOR", "SAIDA")
-
-    # --- MÉTODOS NOVOS (COTA E CONTAGEM) ---
-
-    def contar_carros_no_apto(self, numero_apto):
-        """Conta quantos carros deste apartamento estão NO PÁTIO (estacionado=1)."""
-        cursor = self._get_cursor()
-        try:
-            query = "SELECT COUNT(*) FROM moradores WHERE apartamento = ? AND estacionado = 1"
-            cursor.execute(query, (numero_apto,))
-            return cursor.fetchone()[0]
-        except Exception as e:
-            print(f"❌ Erro ao contar carros do apto: {e}")
-            return 0
-
-    def contar_moradores_estacionados(self):
-        """Conta o total GERAL de moradores dentro do estacionamento."""
-        cursor = self._get_cursor()
-        try:
-            cursor.execute("SELECT COUNT(*) FROM moradores WHERE estacionado = 1")
-            return cursor.fetchone()[0]
-        except Exception:
-            return 0
