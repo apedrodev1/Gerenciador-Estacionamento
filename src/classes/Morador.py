@@ -1,64 +1,70 @@
 """
-Classe Morador (Entidade)
-Responsabilidade: Representar a Pessoa e seu Vínculo Imobiliário (Apartamento).
-Regra de Negócio: As vagas são calculadas matematicamente baseadas no Apartamento.
+Classe Morador (Entidade).
+Responsabilidade: Representar a Pessoa e seu Vínculo (Foreign Key) com o Apartamento.
+Localização: src/classes/Morador.py
 """
-from src.utils.validations import validate_apartamento
+from src.utils.validations import validate_names, validate_cnh
 
 class Morador:
-    def __init__(self, id=None, nome="", cnh="", apartamento=None):
-        self.id = id
+    def __init__(self, id=None, nome="", cnh="", id_apartamento=None):
+        self._id = id
+        # Usamos os setters para validar desde a criação
         self.nome = nome
         self.cnh = cnh
-        # Ao atribuir aqui, o @apartamento.setter já é acionado para validar
-        self.apartamento = apartamento 
+        
+        # VÍNCULO: Agora guardamos apenas o ID (Chave Estrangeira)
+        self.id_apartamento = int(id_apartamento) if id_apartamento else None
 
-    # --- PROPRIEDADE: APARTAMENTO (Com Validação) ---
+    # --- ID (Leitura) ---
     @property
-    def apartamento(self):
-        return self._apartamento
+    def id(self):
+        return self._id
 
-    @apartamento.setter
-    def apartamento(self, valor):
-        """
-        Valida e define o apartamento.
-        Se mudar o apartamento, as vagas calculadas mudarão automaticamente.
-        """
+    # --- NOME (Com Validação) ---
+    @property
+    def nome(self):
+        return self._nome
+
+    @nome.setter
+    def nome(self, valor):
+        val, erro = validate_names(valor)
+        if erro: raise ValueError(erro)
+        self._nome = val
+
+    # --- CNH (Com Validação) ---
+    @property
+    def cnh(self):
+        return self._cnh
+
+    @cnh.setter
+    def cnh(self, valor):
+        val, erro = validate_cnh(valor)
+        if erro: raise ValueError(erro)
+        self._cnh = val
+
+    # --- APARTAMENTO (Vínculo FK) ---
+    # Nota: Não validamos formato "101" aqui, pois aqui entra o ID (1, 2, 50...)
+    @property
+    def id_apartamento(self):
+        return self._id_apartamento
+
+    @id_apartamento.setter
+    def id_apartamento(self, valor):
         if valor is None:
-            self._apartamento = None
+            self._id_apartamento = None
             return
-
-        val_formatado, erro = validate_apartamento(valor)
-        
-        if erro:
-            raise ValueError(f"Erro ao definir apartamento: {erro}")
-        
-        # Salvamos como inteiro para poder fazer a conta das vagas
-        self._apartamento = int(val_formatado)
-
-    # --- PROPRIEDADE CALCULADA: VAGAS ---
-    @property
-    def vagas_vinculadas(self):
-        """
-        Calcula as vagas baseadas no número do apartamento.
-        Regra: Apto N -> Vagas (N*2)-1 e (N*2)
-        Ex: Apto 10 -> M19 e M20
-        """
-        if self._apartamento is None:
-            return []
-
-        vaga2 = self._apartamento * 2
-        vaga1 = vaga2 - 1
-        return [f"M{vaga1}", f"M{vaga2}"]
+        try:
+            self._id_apartamento = int(valor)
+        except ValueError:
+            raise ValueError("O ID do apartamento deve ser um número inteiro.")
 
     def to_dict(self):
         return {
             "id": self.id,
             "nome": self.nome,
             "cnh": self.cnh,
-            "apartamento": self.apartamento,
-            "vagas_direito": self.vagas_vinculadas # Retorna a lista calculada
+            "id_apartamento": self.id_apartamento
         }
 
     def __repr__(self):
-        return f"<Morador {self.nome} - Apto {self.apartamento}>"
+        return f"<Morador {self.nome} | ID_Apto: {self.id_apartamento}>"
