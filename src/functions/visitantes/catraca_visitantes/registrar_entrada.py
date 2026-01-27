@@ -65,7 +65,7 @@ def registrar_entrada_visitante(estacionamento, repositorio):
         eh_novo_cadastro = True
 
     # 3. Criação do Objeto de Visita (Ativa)
-    novo_visitante = VisitanteCatraca(
+    novo_visitante = TicketVisitante(
         nome=nome,
         placa=placa,
         cnh=cnh,
@@ -94,7 +94,7 @@ def registrar_entrada_visitante(estacionamento, repositorio):
             salvar, _ = get_valid_input("Salvar cadastro para a próxima vez? (s/n): ", validate_yes_no)
             
             if salvar == 's':
-                freq = VisitanteCadastro(nome=nome, placa=placa, cnh=cnh, modelo=modelo, cor=cor)
+                freq = Visitante(nome=nome, placa=placa, cnh=cnh, modelo=modelo, cor=cor)
                 try:
                     repositorio.adicionar_visitante_cadastro(freq)
                     print(f"\n{Colors.GREEN}⭐ Cadastro salvo! Na próxima, basta digitar a placa.{Colors.RESET}")
