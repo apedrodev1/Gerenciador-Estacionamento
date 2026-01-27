@@ -1,7 +1,6 @@
 """
 Repositório Especializado: Moradores.
 Lida apenas com a tabela 'moradores' (Dados Pessoais).
-Não manipula veículos ou catraca.
 Localização: src/repositories/morador_repository.py
 """
 from src.repositories.base_repository import BaseRepository
@@ -19,7 +18,7 @@ class MoradorRepository(BaseRepository):
         cursor.execute(queries.INSERT_MORADOR, (
             morador.nome, 
             morador.cnh, 
-            morador.apartamento
+            morador.id_apartamento # AGORA USAMOS O ID (FK)
         ))
         # Importante: Retornamos o ID para vincular o veículo em seguida
         return cursor.lastrowid
@@ -31,12 +30,12 @@ class MoradorRepository(BaseRepository):
         try:
             cursor.execute(queries.SELECT_ALL_MORADORES)
             for row in cursor.fetchall():
-                # Row: (id, nome, cnh, apartamento)
+                # Row: (id, nome, cnh, id_apartamento)
                 m = Morador(
                     id=row[0], 
                     nome=row[1], 
                     cnh=row[2], 
-                    apartamento=row[3]
+                    id_apartamento=row[3] # Mapeando a FK
                 )
                 lista.append(m)
             return lista
@@ -55,55 +54,52 @@ class MoradorRepository(BaseRepository):
                 id=row[0], 
                 nome=row[1], 
                 cnh=row[2], 
-                apartamento=row[3]
+                id_apartamento=row[3]
             )
         return None
 
-    def buscar_por_apartamento(self, numero_apto):
+    def buscar_por_id_apartamento(self, id_apartamento):
         """
-        Retorna uma lista de Moradores vinculados a este apartamento.
-        Útil para saber quem é o dono atual do imóvel.
+        Retorna uma lista de Moradores vinculados a um ID de Apartamento.
+        Nota: Recebe o ID do banco (ex: 5), não o número (ex: 101).
         """
         cursor = self._get_cursor()
-        # Nota: A query SELECT_MORADORES_BY_APTO precisa existir no queries.py
-        # Vou assumir que ela é: "SELECT * FROM moradores WHERE apartamento = ?"
-        cursor.execute(queries.SELECT_MORADORES_BY_APTO, (int(numero_apto),))
+        cursor.execute(queries.SELECT_MORADORES_BY_APTO_ID, (id_apartamento,))
         
         lista = []
         for row in cursor.fetchall():
-            m = Morador(id=row[0], nome=row[1], cnh=row[2], apartamento=row[3])
+            m = Morador(
+                id=row[0], 
+                nome=row[1], 
+                cnh=row[2], 
+                id_apartamento=row[3]
+            )
             lista.append(m)
         return lista
 
-    def listar_apartamentos_ocupados(self):
+    def listar_ids_apartamentos_ocupados(self):
         """
-        Retorna um SET com todos os números de apartamentos que já possuem cadastro.
-        Ex: {101, 102, 504}
-        Similar ao listar_todas_cnhs(), usado para validação rápida.
+        Retorna um SET com os IDs de apartamentos que possuem moradores.
+        Útil para saber quais unidades estão habitadas.
         """
         cursor = self._get_cursor()
         try:
-            cursor.execute("SELECT DISTINCT apartamento FROM moradores")
-            # Retorna um conjunto de inteiros
+            cursor.execute("SELECT DISTINCT id_apartamento FROM moradores")
             return {row[0] for row in cursor.fetchall()}
         except Exception:
             return set()
 
     def atualizar(self, morador: Morador):
-        """Atualiza apenas os dados pessoais e endereço."""
+        """Atualiza dados pessoais e vínculo de moradia."""
         cursor = self._get_cursor()
         cursor.execute(queries.UPDATE_MORADOR, (
             morador.nome, 
             morador.cnh, 
-            morador.apartamento, 
+            morador.id_apartamento, # Atualiza a FK se ele mudar de apto
             morador.id
         ))
 
     def remover(self, id):
-        """
-        Remove o morador.
-        Nota: O banco está configurado com CASCADE, então 
-        os veículos deste morador serão apagados automaticamente.
-        """
+        """Remove o morador (Cascade apaga veículos)."""
         cursor = self._get_cursor()
         cursor.execute(queries.DELETE_MORADOR, (id,))
