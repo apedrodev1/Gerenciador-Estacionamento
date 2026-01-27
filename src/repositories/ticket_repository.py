@@ -7,7 +7,7 @@ Localização: src/repositories/ticket_repository.py
 from datetime import datetime
 from src.repositories.base_repository import BaseRepository
 from src.db import queries
-from src.classes.visitantes.TicketVisitante import TicketVisitante
+from src.classes.visitante.TicketVisitante import TicketVisitante
 
 class TicketRepository(BaseRepository):
     
