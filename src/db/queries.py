@@ -1,23 +1,35 @@
 """
-Módulo de Queries SQL (Refatorado).
-Reflete a nova arquitetura: Morador (Pessoa) | Veículo (Carro) | Ticket (Catraca).
+Módulo de Queries SQL (Refatorado v2).
+Reflete a arquitetura Relacional: Apartamento -> Morador -> Veículo.
 """
 
 # ==============================================================================
 # 1. CRIAÇÃO DE TABELAS (DDL)
 # ==============================================================================
 
-# Agora só guarda a PESSOA e o IMÓVEL
+# [NOVO] Tabela Mestra de Unidades
+CREATE_TABLE_APARTAMENTOS = """
+CREATE TABLE IF NOT EXISTS apartamentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    numero TEXT NOT NULL,
+    bloco TEXT,
+    vagas INTEGER DEFAULT 2,
+    UNIQUE(numero, bloco)
+);
+"""
+
+# [ALTERADO] Agora referencia a tabela apartamentos
 CREATE_TABLE_MORADORES = """
 CREATE TABLE IF NOT EXISTS moradores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     cnh TEXT NOT NULL,
-    apartamento INTEGER NOT NULL
+    id_apartamento INTEGER NOT NULL,
+    FOREIGN KEY(id_apartamento) REFERENCES apartamentos(id) ON DELETE CASCADE
 );
 """
 
-# Tabela nova para as PESSOAS visitantes (Parentes, Prestadores)
+# [MANTIDO] Tabela de Pessoas (Visitantes)
 CREATE_TABLE_VISITANTES_CADASTRO = """
 CREATE TABLE IF NOT EXISTS visitantes_cadastrados (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +39,7 @@ CREATE TABLE IF NOT EXISTS visitantes_cadastrados (
 );
 """
 
-# A Tabela Central: Liga o carro ao dono (Morador ou Visitante)
+# [MANTIDO] Tabela Central de Carros
 CREATE_TABLE_VEICULOS = """
 CREATE TABLE IF NOT EXISTS veiculos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,14 +54,14 @@ CREATE TABLE IF NOT EXISTS veiculos (
 );
 """
 
-# Tabela de Operação (Quem está na vaga rotativa AGORA)
+# [MANTIDO] Tabela de Operação Rotativa
 CREATE_TABLE_TICKETS = """
 CREATE TABLE IF NOT EXISTS tickets_visitantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     placa TEXT NOT NULL,
     numero_vaga INTEGER,
-    entrada TEXT NOT NULL,      -- ISO Format
-    id_visitante INTEGER,       -- Opcional: Link se for alguém cadastrado
+    entrada TEXT NOT NULL,
+    id_visitante INTEGER,
     FOREIGN KEY(id_visitante) REFERENCES visitantes_cadastrados(id)
 );
 """
@@ -59,133 +71,130 @@ CREATE TABLE IF NOT EXISTS historico_movimentacao (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     data_hora TEXT NOT NULL,
     placa TEXT NOT NULL,
-    tipo_veiculo TEXT,  -- 'MORADOR', 'VISITANTE_CADASTRO', 'AVULSO'
-    tipo_evento TEXT    -- 'ENTRADA' ou 'SAIDA'
+    tipo_veiculo TEXT,  
+    tipo_evento TEXT    
 );
 """
 
 
 # ==============================================================================
-# 2. MORADORES (CRUD)
+# 2. APARTAMENTOS (NOVO CRUD)
 # ==============================================================================
 
-INSERT_MORADOR = "INSERT INTO moradores (nome, cnh, apartamento) VALUES (?, ?, ?);"
+INSERT_APARTAMENTO = "INSERT INTO apartamentos (numero, bloco, vagas) VALUES (?, ?, ?);"
 
-SELECT_ALL_MORADORES = "SELECT * FROM moradores ORDER BY apartamento;"
+SELECT_ALL_APARTAMENTOS = "SELECT * FROM apartamentos ORDER BY numero, bloco;"
+
+SELECT_APARTAMENTO_BY_ID = "SELECT * FROM apartamentos WHERE id=?;"
+
+# Busca composta para evitar duplicidade (Ex: Apto 101, Bloco A)
+SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND bloco=?;"
+
+
+# ==============================================================================
+# 3. MORADORES (CRUD Atualizado)
+# ==============================================================================
+
+# Agora salvamos o ID do apartamento, não o número direto
+INSERT_MORADOR = "INSERT INTO moradores (nome, cnh, id_apartamento) VALUES (?, ?, ?);"
+
+# O SELECT simples retorna o ID. Se precisar do numero, o Python busca no objeto Apartamento ou fazemos JOIN.
+SELECT_ALL_MORADORES = "SELECT * FROM moradores;"
 
 SELECT_MORADOR_BY_ID = "SELECT * FROM moradores WHERE id = ?;"
 
-# Busca útil para validação de cadastro (evitar duplicidade no apto se for regra)
-SELECT_MORADORES_BY_APTO = "SELECT * FROM moradores WHERE apartamento = ?;"
+# Busca moradores de um apartamento específico (Pelo ID do apto)
+SELECT_MORADORES_BY_APTO_ID = "SELECT * FROM moradores WHERE id_apartamento = ?;"
 
-UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, apartamento=? WHERE id=?;"
+UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;"
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
 
 
 # ==============================================================================
-# 3. VISITANTES (CADASTRO PESSOA)
+# 4. VISITANTES (CADASTRO PESSOA)
 # ==============================================================================
-
 INSERT_VISITANTE_CADASTRO = "INSERT INTO visitantes_cadastrados (nome, cnh, data_cadastro) VALUES (?, ?, ?);"
-
 SELECT_ALL_VISITANTES = "SELECT * FROM visitantes_cadastrados ORDER BY nome;"
-
 SELECT_VISITANTE_BY_ID = "SELECT * FROM visitantes_cadastrados WHERE id = ?;"
-
 UPDATE_VISITANTE = "UPDATE visitantes_cadastrados SET nome=?, cnh=? WHERE id=?;"
-
 DELETE_VISITANTE = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 
 
 # ==============================================================================
-# 4. VEÍCULOS (CRUD + OPERAÇÃO)
+# 5. VEÍCULOS (CRUD + OPERAÇÃO)
 # ==============================================================================
-
 INSERT_VEICULO = """
 INSERT INTO veiculos (placa, modelo, cor, morador_id, visitante_id, estacionado)
 VALUES (?, ?, ?, ?, ?, ?);
 """
-
+# Conta quantos veículos estão vinculados a moradores de um apto específico
+SELECT_COUNT_VEICULOS_BY_APTO_ID = """
+SELECT COUNT(*) 
+FROM veiculos v
+JOIN moradores m ON v.morador_id = m.id
+WHERE m.id_apartamento = ?;
+"""
 SELECT_VEICULO_BY_PLACA = "SELECT * FROM veiculos WHERE placa = ?;"
-
-# Listar todos os carros de um morador específico
 SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
-
-# Listar todas as placas (para validação de unicidade)
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
-UPDATE_VEICULO = """
-UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=? WHERE placa=?;
-"""
-
+UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=? WHERE placa=?;"
 DELETE_VEICULO = "DELETE FROM veiculos WHERE placa=?;"
 
-# --- Operação de Catraca (Status) ---
+# Catraca
 SET_VEICULO_ESTACIONADO = "UPDATE veiculos SET estacionado = 1 WHERE placa = ?;"
 SET_VEICULO_SAIDA = "UPDATE veiculos SET estacionado = 0 WHERE placa = ?;"
 
 
 # ==============================================================================
-# 5. TICKETS (CATRACA VISITANTE)
+# 6. TICKETS (CATRACA VISITANTE)
 # ==============================================================================
-
-INSERT_TICKET = """
-INSERT INTO tickets_visitantes (placa, numero_vaga, entrada, id_visitante)
-VALUES (?, ?, ?, ?);
-"""
-
-# Verifica se existe ticket aberto para esta placa
+INSERT_TICKET = "INSERT INTO tickets_visitantes (placa, numero_vaga, entrada, id_visitante) VALUES (?, ?, ?, ?);"
 SELECT_TICKET_ATIVO = "SELECT * FROM tickets_visitantes WHERE placa = ?;"
-
 SELECT_ALL_TICKETS = "SELECT * FROM tickets_visitantes;"
-
 SELECT_VAGAS_OCUPADAS_VISITANTES = "SELECT numero_vaga FROM tickets_visitantes;"
-
 DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 
 
 # ==============================================================================
-# 6. RELATÓRIOS E MAPA (SUPER QUERY)
+# 7. RELATÓRIOS E MAPA (SUPER QUERY COM JOIN)
 # ==============================================================================
-# Esta query "monta" o cenário atual unindo as duas tabelas principais
 
 SELECT_OCUPACAO_COMPLETA = """
 -- 1. Veículos de Moradores (Estacionados)
 SELECT 
-    ('M' || (m.apartamento * 2) - 1) as vaga_ref, -- Apenas referência visual, lógica no código
     'MORADOR' as tipo,
+    a.numero as apto_num,
+    a.bloco as apto_bloco,
+    NULL as vaga_visitante,
     m.nome as proprietario,
-    m.apartamento,
     v.placa,
     v.modelo,
     v.cor
 FROM veiculos v
 JOIN moradores m ON v.morador_id = m.id
+JOIN apartamentos a ON m.id_apartamento = a.id
 WHERE v.estacionado = 1
 
 UNION ALL
 
 -- 2. Visitantes (Tickets Ativos)
 SELECT 
-    t.numero_vaga as vaga_ref,
     'VISITANTE' as tipo,
-    COALESCE(vc.nome, 'AVULSO') as proprietario, -- Pega nome se tiver cadastro, senão 'Avulso'
-    NULL as apartamento,
+    NULL as apto_num,
+    NULL as apto_bloco,
+    t.numero_vaga as vaga_visitante,
+    COALESCE(vc.nome, 'AVULSO') as proprietario,
     t.placa,
-    '---' as modelo, -- Ticket não guarda modelo obrigatoriamente
+    '---' as modelo,
     '---' as cor
 FROM tickets_visitantes t
 LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id;
 """
 
 # ==============================================================================
-# 7. HISTÓRICO
+# 8. HISTÓRICO
 # ==============================================================================
-
-INSERT_HISTORICO = """
-INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento)
-VALUES (?, ?, ?, ?);
-"""
-
+INSERT_HISTORICO = "INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento) VALUES (?, ?, ?, ?);"
 SELECT_HISTORICO_RECENTE = "SELECT * FROM historico_movimentacao ORDER BY id DESC LIMIT 50;"
