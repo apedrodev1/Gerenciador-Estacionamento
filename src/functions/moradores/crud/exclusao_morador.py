@@ -8,7 +8,7 @@ from src.utils.validations import validate_yes_no
 from src.ui.colors import Colors
 from src.ui.components import show_success, show_warning, show_error
 
-from .helpers import selecionar_morador
+from .helpers_morador import selecionar_morador
 
 def excluir_morador_form(repositorio):
     """
