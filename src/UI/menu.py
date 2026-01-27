@@ -7,9 +7,9 @@ from src.ui.mapa import exibir_mapa_estacionamento
 from src.functions.relatorios.exibir_relatorios import menu_relatorios
 
 # Imports dos Controllers (Lógica)
-from src.functions.moradores.catraca_moradores.entrada_morador import registrar_entrada_morador
-from src.functions.moradores.catraca_moradores.saida_morador import registrar_saida_morador
-from src.functions.moradores.gerenciar_moradores import menu_gerenciar_moradores
+from src.functions.moradores.catraca.entrada_morador import registrar_entrada_morador
+from src.functions.moradores.catraca.saida_morador import registrar_saida_morador
+from src.functions.moradores.menu_morador import executar_menu_moradores
 from src.functions.visitantes.catraca_visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.catraca_visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.gerenciar_visitantes import menu_gerenciar_visitantes
