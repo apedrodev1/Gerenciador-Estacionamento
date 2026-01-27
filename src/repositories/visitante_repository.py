@@ -6,7 +6,7 @@ Localização: src/repositories/visitante_repository.py
 """
 from src.repositories.base_repository import BaseRepository
 from src.db import queries
-from src.classes.visitantes.Visitante import Visitante
+from src.classes.visitante.Visitante import Visitante
 
 class VisitanteRepository(BaseRepository):
     
