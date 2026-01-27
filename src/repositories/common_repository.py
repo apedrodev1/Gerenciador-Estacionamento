@@ -1,6 +1,6 @@
 """
 Repositório Comum (Setup e Relatórios Globais).
-Responsabilidade: Criar tabelas e executar queries que cruzam múltiplos contextos.
+Responsabilidade: Criar TODAS as tabelas do sistema, inclusive a nova 'apartamentos'.
 Localização: src/repositories/common_repository.py
 """
 import sqlite3
@@ -15,12 +15,13 @@ class CommonRepository(BaseRepository):
             # Se já temos conexão ativa, usa ela. Senão, cria uma temporária.
             manager = self.conn if self.conn else self.db_manager.__enter__()
             
-            # Ordem de criação importa (Tabelas independentes primeiro)
-            manager.execute(queries.CREATE_TABLE_MORADORES)
+            # 1. Tabelas Independentes (Ordem Importa!)
+            manager.execute(queries.CREATE_TABLE_APARTAMENTOS) # <--- FALTAVA ESSA LINHA!
             manager.execute(queries.CREATE_TABLE_VISITANTES_CADASTRO)
             
-            # Tabelas dependentes (Foreign Keys)
-            manager.execute(queries.CREATE_TABLE_VEICULOS)
+            # 2. Tabelas Dependentes (Com Foreign Keys)
+            manager.execute(queries.CREATE_TABLE_MORADORES) # Depende de Apartamentos
+            manager.execute(queries.CREATE_TABLE_VEICULOS)  # Depende de Moradores
             manager.execute(queries.CREATE_TABLE_TICKETS)
             manager.execute(queries.CREATE_TABLE_HISTORICO)
             
@@ -33,19 +34,23 @@ class CommonRepository(BaseRepository):
     def listar_ocupacao_completa(self):
         """
         Gera o relatório do Mapa do Estacionamento.
-        Une carros de Moradores (estacionados) com Tickets de Visitantes.
         """
         cursor = self._get_cursor()
         lista = []
         try:
             cursor.execute(queries.SELECT_OCUPACAO_COMPLETA)
-            # Colunas da Query: vaga_ref, tipo, proprietario, apto, placa, modelo, cor
+            # Colunas da Query: tipo, apto_num, apto_bloco, vaga_visitante, proprietario, placa, modelo, cor
             
             for row in cursor.fetchall():
-                vaga_ref, tipo, prop, apto, placa, modelo, cor = row
+                tipo, apto_num, apto_bloco, vaga_vis, prop, placa, modelo, cor = row
                 
-                # Formata identificador visual
-                identificador = f"Apto {apto}" if tipo == 'MORADOR' else f"Vaga {vaga_ref}"
+                # Lógica de Exibição
+                if tipo == 'MORADOR':
+                    # Monta "101-A" ou só "101"
+                    bloco_str = f"-{apto_bloco}" if apto_bloco else ""
+                    identificador = f"Apto {apto_num}{bloco_str}"
+                else:
+                    identificador = f"Vaga {vaga_vis}"
 
                 lista.append({
                     "vaga": identificador,
@@ -70,21 +75,14 @@ class CommonRepository(BaseRepository):
             print(f"❌ Erro ao buscar histórico: {e}")
             return []
             
-    # --- MÉTODOS DE VALIDAÇÃO (Para evitar duplicidade) ---
-    
     def listar_todas_cnhs(self):
-        """
-        Busca CNHs em Moradores e Visitantes.
-        Usado para garantir que uma pessoa não tenha cadastro duplicado.
-        """
+        """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
         cursor = self._get_cursor()
         cnhs = set()
         try:
-            # 1. Moradores
             cursor.execute("SELECT cnh FROM moradores")
             cnhs.update([r[0] for r in cursor.fetchall()])
             
-            # 2. Visitantes Cadastrados
             cursor.execute("SELECT cnh FROM visitantes_cadastrados")
             cnhs.update([r[0] for r in cursor.fetchall()])
             
