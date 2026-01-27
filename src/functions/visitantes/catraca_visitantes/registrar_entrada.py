@@ -3,9 +3,9 @@ Módulo de Registro de Entrada de Visitantes.
 Agora com Integração Inteligente: Verifica cadastro frequente antes de pedir dados.
 """
 # Importa a classe de operação (Catraca)
-from src.classes.Visitante.VisitanteControle import VisitanteCatraca
+from src.classes.visitante.TicketVisitante import TicketVisitante
 # Importa a classe de cadastro (Frequente)
-from src.classes.Visitante.VisitanteCadastro import VisitanteCadastro
+from src.classes.visitante.Visitante import Visitante
 
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa, validate_names, validate_cnh, validate_yes_no
