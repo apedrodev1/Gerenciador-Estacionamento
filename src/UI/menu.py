@@ -10,7 +10,7 @@ from src.ui.mapa import exibir_mapa_estacionamento
 from src.functions.visitantes.catraca_visitantes.registrar_entrada import registrar_entrada_visitante
 from src.functions.visitantes.catraca_visitantes.registrar_saida import registrar_saida_visitante
 from src.functions.visitantes.gerenciar_visitantes import menu_gerenciar_visitantes
-from src.functions.visitantes.listar_visitantes import listar_visitantes_ativos
+from functions.visitantes.catraca.listar_ativos import listar_visitantes_ativos
 from src.functions.relatorios.exibir_relatorios import menu_relatorios 
 
 
@@ -31,7 +31,7 @@ def exibir_dashboard_topo(estacionamento, repo):
         texto_status = f"LIVRE ({livres} vagas) ✅"
 
     subtitulo = (
-        f"Visitantes: {cor_status}{ocupacao}/{total}{Colors.RESET} | "
+        # f"Visitantes: {cor_status}{ocupacao}/{total}{Colors.RESET} | "
         f"Status: {texto_status}"
     )
     
@@ -79,12 +79,12 @@ def executar_menu_principal(repo, estacionamento):
             elif opcao == '4':
                 menu_gerenciar_visitantes(repo) 
             
-            elif opcao == '5':
-                registrar_entrada_morador(repo, estacionamento)
-            elif opcao == '6':
-                registrar_saida_morador(repo)
-            elif opcao == '7':
-                menu_gerenciar_moradores(repo, estacionamento)
+            # elif opcao == '5':
+            #     registrar_entrada_morador(repo, estacionamento)
+            # elif opcao == '6':
+            #     registrar_saida_morador(repo)
+            # elif opcao == '7':
+            #     menu_gerenciar_moradores(repo, estacionamento)
 
             elif opcao == '8':
                 exibir_mapa_estacionamento(repo)
