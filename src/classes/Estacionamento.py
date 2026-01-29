@@ -6,24 +6,28 @@ Não acessa banco de dados.
 from datetime import datetime
 
 class Estacionamento:
-    def __init__(self, nome="Estacionamento Principal"):
+    # Correção: Adicionados os argumentos opcionais no __init__ para aceitar o que vem do setup.py
+    def __init__(self, nome="Estacionamento Principal", capacidade_visitantes=20, tempo_limite_minutos=120):
         self.nome = nome
         
-        # --- ZONAS E CAPACIDADES ---
-        # Zona A (Visitantes): Vagas rotativas 01-20
-        self.capacidade_visitantes = 20
         
-        # Zona B (Moradores): Vagas garantidas 21-70
+        # --- ZONAS E CAPACIDADES ---
+        # Zona A (Visitantes): Vagas rotativas (Agora dinâmico via .env)
+        self.capacidade_visitantes = int(capacidade_visitantes)
+        
+        # Zona B (Moradores): Vagas garantidas
+        # (Podemos deixar fixo ou expandir no futuro)
         self.capacidade_moradores = 50 
         
-        # Capacidade Total (Apenas informativo)
+        # Capacidade Total (Informativo)
         self.capacidade_total = self.capacidade_visitantes + self.capacidade_moradores
         
-        # Regras de Tempo
-        self.tempo_limite_visitante_minutos = 120
+        # Regras de Tempo (Agora dinâmico via .env)
+        self.tempo_limite_visitante_minutos = int(tempo_limite_minutos)
         
         # Cache de estado (Visitantes)
         self._ocupacao_visitantes = 0
+
 
     # --- PROPRIEDADES (Visitantes) ---
 
@@ -37,15 +41,16 @@ class Estacionamento:
         """Booleano para travar catraca de visitante."""
         return self.vagas_visitantes_disponiveis <= 0
 
+
     # --- MÉTODOS DE REGRA DE NEGÓCIO ---
 
     def alocar_vaga_visitante(self, vagas_ocupadas_set):
         """
-        Descobre qual vaga (1-20) está livre.
+        Descobre qual vaga (1 ao limite) está livre.
         Retorna: int (ex: 5) ou None.
         """
         for i in range(1, self.capacidade_visitantes + 1):
-            # Converte para string pois o set geralmente vem do banco como strings
+            # Garante comparação segura (String vs String)
             if str(i) not in vagas_ocupadas_set:
                 return i
         return None
