@@ -10,7 +10,7 @@ def exibir_mapa_estacionamento(repositorio):
 
     console.print("\n[bold cyan]--- 🗺️  MAPA GERAL DO ESTACIONAMENTO ---[/bold cyan]\n")
     
-    ocupacao = repositorio.listar_ocupacao_total()
+    ocupacao = repositorio.listar_ocupacao_completa()
     
     if not ocupacao:
         console.print("[bold yellow]📭 O estacionamento está completamente vazio.[/bold yellow]")
