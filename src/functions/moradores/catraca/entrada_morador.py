@@ -1,25 +1,28 @@
 """
 Módulo de Entrada de Moradores (Catraca).
 Fluxo: Identificação Automática -> Registro de Log -> Liberação.
-Removida a confirmação manual para agilizar a operação.
+Aceita placa vinda do Wrapper ou pede manual.
 Localização: src/functions/moradores/catraca/entrada_morador.py
 """
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa
 from src.ui.components import header, show_success, show_error, show_warning, Colors
 
-def registrar_entrada_morador(repositorio):
+def registrar_entrada_morador(repositorio, estacionamento, placa_pre_validada=None):
     """
     Registra a entrada de um morador via placa.
-    Processo direto: Se a placa for válida e do condomínio, libera e loga.
     """
     header("ENTRADA DE MORADOR (CATRACA)")
 
-    # 1. Solicita a Placa
-    placa, _ = get_valid_input("Digite a PLACA do veículo: ", validate_placa)
+    # 1. Definição da Placa (Wrapper vs Manual)
+    if placa_pre_validada:
+        placa = placa_pre_validada
+        # Feedback visual para confirmar o que veio do wrapper
+        print(f"Placa identificada: {Colors.BOLD}{placa}{Colors.RESET}")
+    else:
+        placa, _ = get_valid_input("Digite a PLACA do veículo: ", validate_placa)
 
     # 2. Busca o VEÍCULO
-    # O Repositório já faz a busca otimizada (Indexada)
     veiculo = repositorio.buscar_veiculo_por_placa(placa)
 
     # --- VALIDAÇÕES DE SEGURANÇA ---
@@ -35,30 +38,27 @@ def registrar_entrada_morador(repositorio):
         return
 
     if veiculo.estacionado:
-        # Se o sistema diz que já está dentro, pode ser erro de fluxo anterior,
-        # mas por segurança avisamos o operador.
         show_warning(f"O sistema indica que o veículo {placa} JÁ ESTÁ no pátio.")
         return
 
-    # 3. Recupera dados para Log e Display (Auditoria Visual)
+    # 3. Recupera dados para Log e Display
     morador = repositorio.buscar_morador_por_id(veiculo.morador_id)
     
-    # Recupera o Apto (Join manual via Repositório para garantir dados frescos)
+    # Recupera o Apto
     apto_obj = repositorio.buscar_apartamento_por_id(morador.id_apartamento)
     rotulo_apto = apto_obj.rotulo if apto_obj else "Indefinido"
 
-    # 4. EXIBIÇÃO RÁPIDA (Feedback para o Porteiro)
+    # 4. EXIBIÇÃO RÁPIDA
     print("-" * 40)
     print(f"🚘 Veículo: {veiculo.modelo} ({veiculo.cor})")
     print(f"👤 Dono:    {morador.nome}")
     print(f"🏠 Unidade: {rotulo_apto}")
     print("-" * 40)
 
-    # 5. REGISTRO AUTOMÁTICO (Ação)
+    # 5. REGISTRO AUTOMÁTICO
     try:
         repositorio.registrar_entrada_veiculo(veiculo.placa, tipo_dono='MORADOR')
         
-        # Feedback visual de sucesso
         print(f"\n{Colors.GREEN}✔ ACESSO LIBERADO{Colors.RESET}")
         print(f"Log de entrada registrado para {morador.nome}.")
         
