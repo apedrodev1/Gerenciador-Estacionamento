@@ -96,8 +96,10 @@ class EstacionamentoRepository:
     # --- 5. VEÍCULOS ---
     def adicionar_veiculo(self, v): return self.veiculos.adicionar(v)
     def listar_veiculos_por_morador(self, id_morador): return self.veiculos.listar_por_morador(id_morador)
+    #listar_veiculos_por_visitante -- fazer depois 
     def listar_todas_placas(self): return self.veiculos.listar_todas_placas()
     def buscar_veiculo_por_placa(self, placa): return self.veiculos.buscar_por_placa(placa)
+    def buscar_historico_por_placa(self, placa):return self.common.buscar_historico_por_placa(placa)
     def contar_carros_do_apartamento(self, id_apartamento):return self.apartamentos.contar_vagas_ocupadas(id_apartamento)
     def atualizar_veiculo(self, v): return self.veiculos.atualizar(v)
     def remover_veiculo(self, placa): return self.veiculos.remover(placa)
