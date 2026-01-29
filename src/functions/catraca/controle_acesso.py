@@ -3,13 +3,13 @@ Módulo: Controle de Acesso Inteligente (Wrapper).
 Responsabilidade: Receber uma placa e direcionar automaticamente para:
 - Entrada/Saída de Morador
 - Entrada/Saída de Visitante
-Localização: src/functions/controle_acesso.py
+Localização: src/functions/catraca/controle_acesso.py
 """
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa
 from src.ui.components import header, show_warning, Colors
 
-# Importa as funções especialistas que já criamos
+
 from src.functions.moradores.catraca.entrada_morador import registrar_entrada_morador
 from src.functions.moradores.catraca.saida_morador import registrar_saida_morador
 from src.functions.visitantes.catraca.entrada_visitante import registrar_entrada_visitante
@@ -38,10 +38,12 @@ def registrar_acesso_unificado(repositorio, estacionamento):
         
         if ticket:
             print(f"🎫 Ticket de Visitante encontrado. Direcionando para SAÍDA...")
-            registrar_saida_visitante(repositorio, placa_pre_validada=placa)
+            # CORREÇÃO: Passando 'estacionamento'
+            registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         else:
             print(f"🆕 Veículo desconhecido. Direcionando para ENTRADA DE VISITANTE...")
-            registrar_entrada_visitante(repositorio, placa_pre_validada=placa)
+            # CORREÇÃO: Passando 'estacionamento'
+            registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         return
 
     # --- CENÁRIO B: Veículo de MORADOR ---
@@ -74,8 +76,10 @@ def registrar_acesso_unificado(repositorio, estacionamento):
         
         if ticket:
             print("Status Atual: [DENTRO] ➡ Registrando SAÍDA...")
-            registrar_saida_visitante(repositorio, placa_pre_validada=placa)
+            # CORREÇÃO: Passando 'estacionamento'
+            registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         else:
             print("Status Atual: [FORA] ➡ Registrando ENTRADA...")
-            registrar_entrada_visitante(repositorio, placa_pre_validada=placa)
+            # CORREÇÃO: Passando 'estacionamento'
+            registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         return
