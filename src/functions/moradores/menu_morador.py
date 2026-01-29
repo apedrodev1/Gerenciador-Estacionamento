@@ -32,21 +32,21 @@ def executar_menu_moradores(repositorio):
         
         if opcao == '1':
             # Chama o Wizard de Cadastro
-            cadastro.cadastrar_morador_form(repositorio)
+            cadastro_morador.cadastrar_morador_form(repositorio)
             
         elif opcao == '2':
             # Chama o Gerenciador de Edição
-            edicao.editar_morador_form(repositorio)
+            edicao_morador.editar_morador_form(repositorio)
             
         elif opcao == '3':
             # Chama o Fluxo de Exclusão
-            exclusao.excluir_morador_form(repositorio)
+            exclusao_morador.excluir_morador_form(repositorio)
             
         elif opcao == '4':
             # Usa o helper apenas para listar (sem selecionar)
             # Como o helper pede input, podemos criar uma função rápida aqui ou no helper
             # Para simplificar, chamamos o helper e ignoramos o retorno (efeito visual de listagem)
-            helpers.selecionar_morador(repositorio)
+            helpers_morador.selecionar_morador(repositorio)
             input(f"\n{Colors.DIM}Pressione Enter para continuar...{Colors.RESET}")
             
         elif opcao == '0':
