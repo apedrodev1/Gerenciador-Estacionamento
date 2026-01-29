@@ -42,7 +42,7 @@ def selecionar_visitante(repositorio, apenas_listar=False):
             data_fmt
         ])
 
-    # 3. Renderiza a Tabela
+    # 3. Renderiza a Tabela -- Verificar a melhor forma de exibição, se por id ou ordem alfabetica
     titulo = "VISITANTES CADASTRADOS" if apenas_listar else "SELECIONAR VISITANTE"
     
     criar_tabela(
