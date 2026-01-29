@@ -198,3 +198,9 @@ LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id;
 # ==============================================================================
 INSERT_HISTORICO = "INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento) VALUES (?, ?, ?, ?);"
 SELECT_HISTORICO_RECENTE = "SELECT * FROM historico_movimentacao ORDER BY id DESC LIMIT 50;"
+SELECT_HISTORICO_BY_PLACA = """
+    SELECT data_evento, placa, tipo_dono, evento 
+    FROM historico 
+    WHERE placa = ? 
+    ORDER BY data_evento DESC
+"""
