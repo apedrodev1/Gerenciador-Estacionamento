@@ -65,27 +65,39 @@ class CommonRepository(BaseRepository):
             print(f"Erro ao gerar mapa: {e}") 
             return []
 
+
+    def buscar_historico_por_placa(self, placa):
+            """Filtra logs por placa."""
+            cursor = self._get_cursor()
+            try:
+                cursor.execute(queries.SELECT_HISTORICO_BY_PLACA, (placa,))
+                return cursor.fetchall()
+            except Exception as e:
+                print(f"Erro ao buscar histórico da placa: {e}")
+                return []
+
+            
     def listar_historico_recente(self):
-        """Retorna os últimos 50 eventos de entrada/saída."""
-        cursor = self._get_cursor()
-        try:
-            cursor.execute(queries.SELECT_HISTORICO_RECENTE)
-            return cursor.fetchall()
-        except Exception as e:
-            print(f"❌ Erro ao buscar histórico: {e}")
-            return []
-            
+                """Retorna os últimos 50 eventos de entrada/saída."""
+                cursor = self._get_cursor()
+                try:
+                    cursor.execute(queries.SELECT_HISTORICO_RECENTE)
+                    return cursor.fetchall()
+                except Exception as e:
+                    print(f"❌ Erro ao buscar histórico: {e}")
+                    return []
+                    
     def listar_todas_cnhs(self):
-        """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
-        cursor = self._get_cursor()
-        cnhs = set()
-        try:
-            cursor.execute("SELECT cnh FROM moradores")
-            cnhs.update([r[0] for r in cursor.fetchall()])
-            
-            cursor.execute("SELECT cnh FROM visitantes_cadastrados")
-            cnhs.update([r[0] for r in cursor.fetchall()])
-            
-            return cnhs
-        except Exception: 
-            return set()
+                """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
+                cursor = self._get_cursor()
+                cnhs = set()
+                try:
+                    cursor.execute("SELECT cnh FROM moradores")
+                    cnhs.update([r[0] for r in cursor.fetchall()])
+                    
+                    cursor.execute("SELECT cnh FROM visitantes_cadastrados")
+                    cnhs.update([r[0] for r in cursor.fetchall()])
+                    
+                    return cnhs
+                except Exception: 
+                    return set()
