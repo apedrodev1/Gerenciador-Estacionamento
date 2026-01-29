@@ -11,7 +11,7 @@ from src.utils.validations import (
 from src.ui.colors import Colors
 from src.ui.components import header, show_success, show_error, show_warning
 
-from .helpers import selecionar_visitante
+from .helpers_visitante import selecionar_visitante
 
 def editar_visitante_form(repositorio):
     """Sub-menu de edição do visitante selecionado."""
