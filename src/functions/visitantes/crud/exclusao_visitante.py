@@ -8,7 +8,7 @@ from src.utils.validations import validate_yes_no
 from src.ui.components import show_success, show_error, show_warning, Colors
 
 # Importa o helper local para selecionar quem será removido
-from .helpers import selecionar_visitante
+from .helpers_visitante import selecionar_visitante
 
 def remover_visitante_form(repositorio):
     """
