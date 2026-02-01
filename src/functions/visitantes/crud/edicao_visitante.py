@@ -111,7 +111,7 @@ def _adicionar_veiculo_visitante(repositorio, visitante):
         modelo=modelo, 
         cor=cor, 
         visitante_id=visitante.id, # VÍNCULO AQUI
-        estacionado=False
+        estacionado=False # Não ta passando, ou ta passando false, sem checar ver isso!
     )
     
     try:
@@ -136,4 +136,4 @@ def _remover_veiculo_visitante(repositorio, lista_veiculos):
             repositorio.remover_veiculo(placa_alvo)
             show_success("Veículo removido.")
     else:
-        show_error("Placa não encontrada nesta frota.")
+        show_error("Placa não encontrada!")
