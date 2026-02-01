@@ -110,7 +110,7 @@ def cadastrar_morador_form(repositorio):
             return val, None
 
         placa, _ = get_valid_input("Placa do Veículo: ", validador_placa_unica)
-        modelo = input("Modelo/Marca (ex: Fiat Uno): ").strip().upper()
+        modelo = input("Modelo/Marca: ").strip().upper()
         cor = input("Cor: ").strip().upper()
 
     # =========================================================================
