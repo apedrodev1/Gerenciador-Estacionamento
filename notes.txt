@@ -1,0 +1,27 @@
+Notas de correção: 
+
+1 - Visitante avulso
+Pergunta de salvar cadastro - mover para saída considerar???
+
+entrada_visitante - linha 100 
+
+2 - Mapa Geral: 
+Visitante Frequente (mudar esse nome para Visitante cadastro - algo do tipo, pensar!), e Vistante avulso (mudar para Rotativo, gosto mais), sao contabilizados como moradores e os dados do carro não aparecem, já moradores, os dados aparecem, ele é contado como morador, mas na coluna tipo ele entra como Visitante.
+
+
+
+
+edicao_morador.py
+linha 43:
+
+     else:
+            for v in veiculos:
+                status = f"{Colors.GREEN}[NO PÁTIO]{Colors.RESET}" if v.estacionado else "[FORA]"
+                print(f"🚗 {v.placa:<8} | {v.modelo:<15} | {v.cor:<10} {status}")
+
+
+em morador funciona e os codigos parecem estarem identicos, nao consegui achar 
+
+verificaçao dos dois carros/apto, funcionando!!
+
+Relátorios parece nao estar funcionando
