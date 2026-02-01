@@ -60,6 +60,24 @@ class VeiculoRepository(BaseRepository):
             lista.append(v)
         return lista
 
+    def listar_por_visitante(self, id_visitante):
+        """Retorna lista de veículos de um visitante específico."""
+        cursor = self._get_cursor()
+        cursor.execute(queries.SELECT_VEICULOS_BY_VISITANTE_ID, (id_visitante,))
+        lista = []
+        for row in cursor.fetchall():
+            v = Veiculo(
+                id=row[0], 
+                placa=row[1], 
+                modelo=row[2], 
+                cor=row[3],
+                estacionado=bool(row[4]), 
+                morador_id=row[5], 
+                visitante_id=row[6]
+            )
+            lista.append(v)
+        return lista
+
     def listar_todas_placas(self):
         """Retorna lista de placas (strings) para validação de unicidade."""
         cursor = self._get_cursor()
