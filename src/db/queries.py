@@ -137,6 +137,7 @@ WHERE m.id_apartamento = ?;
 """
 SELECT_VEICULO_BY_PLACA = "SELECT * FROM veiculos WHERE placa = ?;"
 SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
+SELECT_VEICULOS_BY_VISITANTE_ID = "SELECT * FROM veiculos WHERE visitante_id = ?;"
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
 UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=? WHERE placa=?;"
