@@ -6,8 +6,8 @@ Fluxo:
 3. Gera Ticket.
 Localização: src/functions/visitantes/catraca/entrada_visitante.py
 """
-from src.classes.visitante.TicketVisitante import TicketVisitante
-from src.classes.visitante.Visitante import Visitante
+from src.classes.Visitante.TicketVisitante import TicketVisitante
+from src.classes.Visitante.Visitante import Visitante
 from src.classes.Veiculo import Veiculo
 
 from src.utils.input_handler import get_valid_input
@@ -97,7 +97,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
         )
         show_success(msg)
 
-        # 4. UPSELL
+        # 4. UPSELL -- Talvez mover esse módulo para a saida do visitante ?? Pensar sobre
         if not veiculo:
             print("\n" + Colors.CYAN + "-"*50 + Colors.RESET)
             print(f"Deseja salvar {nome_motorista} como {Colors.BOLD}VISITANTE FREQUENTE{Colors.RESET}?")
