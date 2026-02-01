@@ -3,7 +3,7 @@ Funcionalidade: Cadastro de Visitantes Frequentes.
 Permite registrar prestadores de serviço ou parentes e, opcionalmente, seus veículos.
 Localização: src/functions/visitantes/crud/cadastro.py
 """
-from src.classes.visitante.Visitante import Visitante
+from src.classes.Visitante.Visitante import Visitante
 from src.classes.Veiculo import Veiculo
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import (
@@ -57,7 +57,7 @@ def cadastrar_visitante_form(repositorio):
             return val, None
 
         placa, _ = get_valid_input("Placa: ", validador_placa_unica)
-        modelo = input("Modelo (ex: Gol, Celta): ").strip().upper()
+        modelo = input("Marca/Modelo: ").strip().upper()
         cor = input("Cor: ").strip().upper()
     else:
         print(f"{Colors.DIM}>> Cadastro apenas da pessoa (sem veículo vinculado).{Colors.RESET}")
