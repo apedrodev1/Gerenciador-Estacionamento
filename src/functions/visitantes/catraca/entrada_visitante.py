@@ -34,7 +34,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
 
     # Feedback visual usando dados da Classe
     livres = estacionamento.capacidade_visitantes - len(vagas_ocupadas)
-    print(f"ℹ Vagas Livres: {livres} | Próxima Sugerida: {Colors.BOLD}{Colors.GREEN}Vaga {vaga_livre}{Colors.RESET}")
+    print(f"ℹ Vagas Livres: {livres} | Dirija-se a {Colors.BOLD}{Colors.GREEN}Vaga {vaga_livre}{Colors.RESET}")
     print("-" * 50)
 
     # =========================================================================
@@ -42,7 +42,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
     # =========================================================================
     if placa_pre_validada:
         placa = placa_pre_validada
-        print(f"Placa identificada: {placa}")
+        # print(f"Placa já cadastrada: {placa}")
     else:
         placa, _ = get_valid_input("\nDigite a PLACA do veículo: ", validate_placa)
 
@@ -60,14 +60,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
 
         if veiculo.visitante_id:
             visitante = repositorio.buscar_visitante_por_id(veiculo.visitante_id)
-            if visitante:
-                print(f"\n{Colors.GREEN}✅ VISITANTE FREQUENTE IDENTIFICADO!{Colors.RESET}")
-                print(f"   Nome:    {visitante.nome}")
-                print(f"   Veículo: {veiculo.modelo} - {veiculo.cor}")
-                
-                conf, _ = get_valid_input("\nConfirmar entrada? (s/n): ", validate_yes_no)
-                if conf != 's': return
-                
+            if visitante:   
                 id_visitante_vinculado = visitante.id
                 nome_motorista = visitante.nome
 
@@ -86,21 +79,21 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
             numero_vaga=vaga_livre,
             id_visitante=id_visitante_vinculado
         )
-        
         repositorio.criar_ticket(novo_ticket)
+        repositorio.registrar_log_visitante(placa, "ENTRADA")
         
         msg = (
-            f"Entrada Registrada!\n"
+            f"Entrada Autorizada!\n"
             f"   👤 {nome_motorista}\n"
             f"   🚘 {placa}\n"
             f"   📍 VAGA: {vaga_livre}"
         )
         show_success(msg)
 
-        # 4. UPSELL -- Talvez mover esse módulo para a saida do visitante ?? Pensar sobre
+        # 4. UPSELL -- 
         if not veiculo:
             print("\n" + Colors.CYAN + "-"*50 + Colors.RESET)
-            print(f"Deseja salvar {nome_motorista} como {Colors.BOLD}VISITANTE FREQUENTE{Colors.RESET}?")
+            print(f"Deseja salvar {nome_motorista} no {Colors.BOLD}CADASTRO DOS VISITANTES{Colors.RESET}?")
             salvar, _ = get_valid_input("Salvar cadastro para a próxima vez? (s/n): ", validate_yes_no)
             
             if salvar == 's':
@@ -129,7 +122,7 @@ def _converter_avulso_em_frequente(repositorio, nome, placa):
         )
         repositorio.adicionar_veiculo(novo_carro)
         
-        show_success("Cadastro Frequente Realizado!")
+        show_success("Cadastro Realizado!")
         
     except Exception as e:
-        show_warning(f"Não foi possível completar o cadastro frequente: {e}")
+        show_warning(f"Não foi possível completar o cadastro: {e}")
