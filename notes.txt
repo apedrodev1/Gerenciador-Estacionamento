@@ -5,23 +5,143 @@ Pergunta de salvar cadastro - mover para saída considerar???
 
 entrada_visitante - linha 100 
 
-2 - Mapa Geral: 
-Visitante Frequente (mudar esse nome para Visitante cadastro - algo do tipo, pensar!), e Vistante avulso (mudar para Rotativo, gosto mais), sao contabilizados como moradores e os dados do carro não aparecem, já moradores, os dados aparecem, ele é contado como morador, mas na coluna tipo ele entra como Visitante.
-
-
-
-
-edicao_morador.py
-linha 43:
-
-     else:
-            for v in veiculos:
-                status = f"{Colors.GREEN}[NO PÁTIO]{Colors.RESET}" if v.estacionado else "[FORA]"
-                print(f"🚗 {v.placa:<8} | {v.modelo:<15} | {v.cor:<10} {status}")
-
-
-em morador funciona e os codigos parecem estarem identicos, nao consegui achar 
 
 verificaçao dos dois carros/apto, funcionando!!
 
 Relátorios parece nao estar funcionando
+
+
+Erros
+
+Catraca - 
+
+1- Aceita entrada de morador, porem a página dá um flash e nenhum input de confirmação é exibido. Saída tudo correndo bem. problema de flash na entrada apenas  
+
+ Erros Morador -
+
+1 - Adicionar Morador 
+excesso de inputs apos confirmação.  
+
+  # 2. Salva Veículo (Se aplicável)
+        msg_veiculo = "🚫 Sem veículo (Cota cheia ou não informado)"
+        
+        if cadastrar_carro and placa:
+            novo_veiculo = Veiculo(
+                placa=placa,
+                modelo=modelo,
+                cor=cor,
+                morador_id=id_morador_gerado,
+                estacionado=False
+            )
+            repositorio.adicionar_veiculo(novo_veiculo)
+            msg_veiculo = f"🚗 {modelo} - {placa}"
+        
+        show_success(f"Cadastro Realizado com Sucesso!")
+        print(msg_veiculo) # não quero mais estes detalhes, apenas a confirmação de que o cadastro foi feito, porem quando eu apago esta linha, o input "aperte ENTER para voltar..." aparece 2x
+
+reduzir inputs, a ideia da funcao show_success(), enfim repensamos algo mais limpo     
+
+
+2 -Listar moradores (opção 4) - ao exibir a tabela (ainda não editada), os inputs são: 
+(Aperte 0 para cancelar)
+Digite o ID do morador:
+
+para sair é necessário digitar o id de algum morador da lista e assim apertar enter
+
+código: 
+src.functions.moradores.menu_morador.py
+linha 45 
+
+ elif opcao == '4':
+            # Usa o helper apenas para listar (sem selecionar)
+            # Como o helper pede input, podemos criar uma função rápida aqui ou no helper
+            # Para simplificar, chamamos o helper e ignoramos o retorno (efeito visual de listagem)
+            helpers_morador.selecionar_morador(repositorio)
+            input(f"\n{Colors.DIM}Pressione Enter para continuar...{Colors.RESET}")
+
+e na verdade o helpers_morador, não é tão bem construido quanto o de visitantes, note esse if que está faltando dentro do arquivo dos moradores, acredito que aqui resolveremos isso: 
+
+src.functions.visitantes.crud.helpers_visitante.py
+
+ver!
+
+
+
+ # 4. Lógica de Seleção ou Saída
+    if apenas_listar:
+        return None
+
+    print(f"\n{Colors.DIM}(Digite 0 para cancelar){Colors.RESET}")
+    
+    def validador_id(valor):
+        if not valor.isdigit(): return None, "Digite um número inteiro."
+        id_int = int(valor)
+        if id_int == 0: return 0, None # Saída
+        if id_int not in ids_validos: return None, "ID não encontrado na lista."
+        return id_int, None
+
+    id_selecionado, _ = get_valid_input("Digite o ID: ", validador_id)
+    
+    if id_selecionado == 0:
+        return None
+        
+    # Retorna o objeto completo do repositório
+    return repositorio.buscar_visitante_por_id(id_selecionado) 
+
+
+
+3 - Exibição dos Visitantes:
+src.fucntions.visitantes.crud.helpers.py
+linha 45
+
+# 3. Renderiza a Tabela -- Verificar a melhor forma de exibição, se por id ou ordem alfabetica, 
+    
+    titulo = "VISITANTES CADASTRADOS" if apenas_listar else "SELECIONAR VISITANTE"
+    
+    criar_tabela(
+        titulo=titulo,
+        colunas=["ID", "Nome", "CNH", "Desde"],
+        linhas=dados_tabela
+
+
+
+Erro 
+Menu inicial
+
+é exibido no menu uma quantidade diferente das 20 vagas reservadas ao visitante, atualmente mostra 100
+código parece estar ok...
+
+src.ui.menu.py
+linha 29:
+
+def exibir_dashboard_topo(estacionamento, repo):
+    """Monta o cabeçalho dinâmico com estatísticas em tempo real."""
+
+	tickets_ativos = len(repo.listar_tickets_ativos())
+   
+   	 livres = estacionamento.capacidade_visitantes - tickets_ativos
+
+
+.env:
+
+# Configurações do Banco de Dados
+DB_FILENAME=estacionamento.db
+
+# Configurações do Estacionamento
+PARKING_NAME=Condomínio Solar
+TOTAL_CAPACITY=20 # menu.py pega as vagas de visitante daqui, ver!
+TIME_LIMIT_MINUTES=120
+
+0 100 vem do TOTAL_CAPACITY= 100, mudei para 20, alterar nome da variavel, se possivel incluir mais uma que é sera a capacidade de visitantes
+
+
+ Erro Mapa Visual - 
+
+Informa morador como visitante na coluna/campo TIPO, visitante está correto, porém é contado como morador
+no campo abaixo da tabela, onde se totaliza visitante, morador e total
+
+Modelo / Cor é exibido com --- para os visitantes, para moradores ele pega o dado e exibe corretamente.
+
+Erro
+Motorista avulso -> cadastrado
+catraca >>> placa ñ cadastrada >>> cria cadastro >> Mapa geral ainda o vê como avulso / saida catraca também vê como avulso
