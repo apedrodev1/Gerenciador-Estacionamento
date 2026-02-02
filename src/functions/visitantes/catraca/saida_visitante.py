@@ -73,6 +73,7 @@ def registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=No
     if confirmar == 's':
         try:
             repositorio.remover_ticket(ticket.id)
+            repositorio.registrar_log_visitante(ticket.placa, "SAIDA")
             show_success(f"Saída registrada! Vaga {ticket.numero_vaga} liberada.")
             print(f"👋 Volte sempre, {nome_visitante}!")
             
