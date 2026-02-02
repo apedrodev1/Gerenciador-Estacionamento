@@ -110,6 +110,6 @@ class EstacionamentoRepository:
     def criar_ticket(self, t): return self.tickets.criar_ticket(t)
     def buscar_ticket_ativo(self, placa): return self.tickets.buscar_ticket_ativo(placa)
     def listar_tickets_ativos(self): return self.tickets.listar_tickets_ativos()
-    def listar_vagas_ocupadas_tickets(self): return self.tickets.listar_vagas_ocupadas()
     def remover_ticket(self, id): return self.tickets.remover_ticket(id)
-
+    def registrar_log_visitante(self, placa, evento): self.veiculos.registrar_log_visitante(placa, evento)
+    def listar_vagas_ocupadas_tickets(self): return self.tickets.listar_vagas_ocupadas()
