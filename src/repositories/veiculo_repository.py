@@ -128,6 +128,16 @@ class VeiculoRepository(BaseRepository):
         self._registrar_log(placa, tipo_dono, "SAIDA")
 
     # --- MÉTODO PRIVADO AUXILIAR ---
+
+    def registrar_log_visitante(self, placa, evento):
+        """
+        Apenas grava o histórico (Usado para visitantes com ou sem cadastro).
+        Não tenta atualizar status na tabela veiculos para evitar erros com avulsos.
+        """
+        # Define se é VISITANTE ou AVULSO (apenas para ficar bonito no relatório)
+        # Se quiser simplificar, pode mandar sempre "VISITANTE"
+        tipo = "VISITANTE" 
+        self._registrar_log(placa, tipo, evento)
     
     def _registrar_log(self, placa, tipo_veiculo, evento):
         """Insere registro na tabela de auditoria."""
