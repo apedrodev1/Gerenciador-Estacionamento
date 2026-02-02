@@ -37,7 +37,7 @@ def exibir_dashboard_topo(estacionamento, repo):
         texto_status = "LOTADO (Visitantes) ⛔"
     else:
         cor_status = Colors.GREEN
-        texto_status = f"LIVRE ({livres} vagas visitantes) ✅"
+        texto_status = f"{livres} LIVRES ✅"
 
     subtitulo = f"Status Pátio: {texto_status}"  # (possibilidade de correção) aqui podemos importar a classe Estacionamento e usar a propriedade Estacionamento.vagas_visitantes_disponiveis(self), mais simples eu acho / ou ajustar o .env. ver depois!
     header(estacionamento.nome, subtitulo)
