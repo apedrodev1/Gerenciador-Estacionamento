@@ -199,7 +199,6 @@ LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id;
 # ==============================================================================
 INSERT_HISTORICO = "INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento) VALUES (?, ?, ?, ?);"
 
-# CORREÇÃO: Selecionamos apenas as 4 colunas que o Python espera (ignorando o ID)
 SELECT_HISTORICO_RECENTE = """
     SELECT data_hora, placa, tipo_veiculo, tipo_evento 
     FROM historico_movimentacao 
@@ -207,8 +206,6 @@ SELECT_HISTORICO_RECENTE = """
     LIMIT 50;
 """
 
-# CORREÇÃO: Nome da tabela corrigido (de 'historico' para 'historico_movimentacao')
-# e nomes das colunas padronizados
 SELECT_HISTORICO_BY_PLACA = """
     SELECT data_hora, placa, tipo_veiculo, tipo_evento 
     FROM historico_movimentacao 
