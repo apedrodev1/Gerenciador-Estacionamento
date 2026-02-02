@@ -21,30 +21,29 @@ def _renderizar_tabela_historico(dados, titulo="HISTÓRICO"):
     linhas_formatadas = []
     
     for row in dados:
-        # A estrutura da tupla retornada pela query deve ser:
-        # (data_iso, placa, tipo_evento, evento)
-        # Ex: ('2026-01-28T14:00:00', 'ABC-1234', 'MORADOR', 'ENTRADA')
         
+        data_iso, placa, tipo, evento = row
+        
+        # Formatação de Data
         try:
-            data_iso, placa, tipo, evento = row
-            
-            # Formatação de Data
-            try:
-                dt = datetime.fromisoformat(data_iso)
-                data_fmt = dt.strftime("%d/%m/%Y %H:%M")
-            except ValueError:
-                data_fmt = data_iso # Fallback se não for data válida
-
-            # Formatação Colorida
-            evento_fmt = f"[green]{evento}[/green]" if evento == "ENTRADA" else f"[red]{evento}[/red]"
-            tipo_fmt = f"[cyan]{tipo}[/cyan]" if tipo == "MORADOR" else f"[yellow]{tipo}[/yellow]"
-
-            linhas_formatadas.append([data_fmt, placa, tipo_fmt, evento_fmt])
-            
+            # Tenta converter ISO (YYYY-MM-DD HH:MM:SS) para BR
+            dt = datetime.fromisoformat(data_iso)
+            data_fmt = dt.strftime("%d/%m/%Y %H:%M")
         except ValueError:
-            # Caso a query retorne colunas diferentes do esperado
-            continue
+            data_fmt = data_iso # Fallback se der erro na data
 
+        # Formatação Colorida
+        evento_fmt = f"[green]{evento}[/green]" if evento == "ENTRADA" else f"[red]{evento}[/red]"
+        
+        if tipo == "MORADOR":
+            tipo_fmt = f"[cyan]{tipo}[/cyan]"
+        elif tipo == "VISITANTE":
+             tipo_fmt = f"[yellow]{tipo}[/yellow]"
+        else:
+            tipo_fmt = tipo # Caso seja 'DESCONHECIDO' ou outro
+
+        linhas_formatadas.append([data_fmt, placa, tipo_fmt, evento_fmt])
+            
     criar_tabela(
         titulo=titulo,
         colunas=["Data/Hora", "Placa", "Tipo", "Evento"],
@@ -56,7 +55,6 @@ def relatorio_geral(repositorio):
     """Mostra as últimas 50 movimentações do estacionamento."""
     header("RELATÓRIO DE MOVIMENTAÇÃO (ÚLTIMOS 50)")
     try:
-        # Chama via Facade
         dados = repositorio.listar_historico_recente()
         _renderizar_tabela_historico(dados, titulo="EXTRATO GERAL")
     except Exception as e:
@@ -68,7 +66,6 @@ def relatorio_por_placa(repositorio):
     placa, _ = get_valid_input("Digite a Placa: ", validate_placa)
     
     try:
-        # Chama via Facade (Precisamos garantir que este método exista no repo!)
         dados = repositorio.buscar_historico_por_placa(placa)
         _renderizar_tabela_historico(dados, titulo=f"EXTRATO: {placa}")
     except Exception as e:
