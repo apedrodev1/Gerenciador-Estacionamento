@@ -145,9 +145,7 @@ def cadastrar_morador_form(repositorio):
             msg_veiculo = f"🚗 {modelo} - {placa}"
         
         show_success(f"Cadastro Realizado com Sucesso!")
-        print(f"🏠 Unidade: {apto_obj.rotulo}")
-        print(f"👤 Morador: {nome}")
-        print(msg_veiculo)
+        print(msg_veiculo) # não quero mais estes detalhes, apenas a confirmação de que o cadastro foi feito, porem quando eu apago esta linha, o input "aperte ENTER para voltar..." aprarece 2x
         
     except Exception as e:
         show_error(f"Erro ao salvar no banco de dados: {e}")
