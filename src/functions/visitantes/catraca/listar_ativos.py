@@ -71,7 +71,7 @@ def listar_visitantes_ativos(repositorio):
 
     # 3. Renderiza a Tabela
     criar_tabela(
-        titulo=f"VISITANTES NO PÁTIO ({len(tickets)})",
+        titulo=f"VISITANTES NO PÁTIO: ({len(tickets)})", # pensar em apagar
         colunas=["Vaga", "Placa", "Identificação", "Entrada", "Tempo", "Status"],
         linhas=dados_linhas
     )
