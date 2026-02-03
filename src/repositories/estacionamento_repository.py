@@ -108,6 +108,7 @@ class EstacionamentoRepository:
 
     # --- 6. TICKETS ---
     def criar_ticket(self, t): return self.tickets.criar_ticket(t)
+    def vincular_cadastro_a_ticket(self, placa, id_visitante): self.tickets.vincular_cadastro_a_ticket(placa, id_visitante)
     def buscar_ticket_ativo(self, placa): return self.tickets.buscar_ticket_ativo(placa)
     def listar_tickets_ativos(self): return self.tickets.listar_tickets_ativos()
     def remover_ticket(self, id): return self.tickets.remover_ticket(id)
