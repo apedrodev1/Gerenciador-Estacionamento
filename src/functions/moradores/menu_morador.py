@@ -46,7 +46,7 @@ def executar_menu_moradores(repositorio):
             # Usa o helper apenas para listar (sem selecionar)
             # Como o helper pede input, podemos criar uma função rápida aqui ou no helper
             # Para simplificar, chamamos o helper e ignoramos o retorno (efeito visual de listagem)
-            helpers_morador.selecionar_morador(repositorio)
+            helpers_morador.selecionar_morador(repositorio, apenas_listar=True)
             input(f"\n{Colors.DIM}Pressione Enter para continuar...{Colors.RESET}")
             
         elif opcao == '0':
