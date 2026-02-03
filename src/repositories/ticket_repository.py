@@ -29,6 +29,16 @@ class TicketRepository(BaseRepository):
         ))
         return cursor.lastrowid
 
+    def vincular_cadastro_a_ticket(self, placa, id_visitante):
+        """
+        Atualiza tickets ativos desta placa, vinculando-os ao visitante recém-criado.
+        Usado quando um visitante se cadastra após entrar com veículo.
+        """
+        cursor = self._get_cursor()
+        sql = "UPDATE tickets_visitantes SET id_visitante = ? WHERE placa = ?"
+        cursor.execute(sql, (id_visitante, placa))
+        self.conn.commit()
+
     def buscar_ticket_ativo(self, placa):
         """
         Verifica se existe um ticket ABERTO para esta placa.
