@@ -165,14 +165,14 @@ DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 SELECT_OCUPACAO_COMPLETA = """
 -- 1. Veículos de Moradores (Estacionados)
 SELECT 
-    'MORADOR' as tipo,
-    a.numero as apto_num,
-    a.bloco as apto_bloco,
-    NULL as vaga_visitante,
-    m.nome as proprietario,
-    v.placa,
-    v.modelo,
-    v.cor
+    'MORADOR' as tipo,              -- Coluna 0
+    a.numero as apto_num,           -- Coluna 1
+    a.bloco as apto_bloco,          -- Coluna 2
+    NULL as vaga_visitante,         -- Coluna 3 (Vazio para morador)
+    m.nome as proprietario,         -- Coluna 4
+    v.placa,                        -- Coluna 5
+    v.modelo,                       -- Coluna 6
+    v.cor                           -- Coluna 7
 FROM veiculos v
 JOIN moradores m ON v.morador_id = m.id
 JOIN apartamentos a ON m.id_apartamento = a.id
@@ -181,17 +181,20 @@ WHERE v.estacionado = 1
 UNION ALL
 
 -- 2. Visitantes (Tickets Ativos)
+-- Agora fazemos JOIN com 'veiculos' para tentar achar a cor/modelo se existir cadastro
 SELECT 
-    'VISITANTE' as tipo,
-    NULL as apto_num,
-    NULL as apto_bloco,
-    t.numero_vaga as vaga_visitante,
-    COALESCE(vc.nome, 'AVULSO') as proprietario,
-    t.placa,
-    '---' as modelo,
-    '---' as cor
+    'VISITANTE' as tipo,            -- Coluna 0
+    NULL as apto_num,               -- Coluna 1 (Vazio para visitante)
+    NULL as apto_bloco,             -- Coluna 2 (Vazio para visitante)
+    t.numero_vaga as vaga_visitante,-- Coluna 3
+    COALESCE(vc.nome, 'AVULSO') as proprietario, -- Coluna 4
+    t.placa,                        -- Coluna 5
+    COALESCE(v.modelo, '---') as modelo, -- Coluna 6 (Busca no carro, se não, ---)
+    COALESCE(v.cor, '---') as cor        -- Coluna 7 (Busca no carro, se não, ---)
 FROM tickets_visitantes t
-LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id;
+LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id
+LEFT JOIN veiculos v ON t.placa = v.placa -- JOIN NOVO: Busca dados do carro pela placa
+;
 """
 
 # ==============================================================================
