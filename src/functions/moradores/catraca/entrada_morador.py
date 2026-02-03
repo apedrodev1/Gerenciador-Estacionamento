@@ -60,7 +60,7 @@ def registrar_entrada_morador(repositorio, estacionamento, placa_pre_validada=No
         repositorio.registrar_entrada_veiculo(veiculo.placa, tipo_dono='MORADOR')
         
         print(f"\n{Colors.GREEN}✔ ACESSO LIBERADO{Colors.RESET}")
-        print(f"Log de entrada registrado para {morador.nome}.")
+        input(f"\n{Colors.DIM}Pressione Enter para continuar...{Colors.RESET}")
         
     except Exception as e:
         show_error(f"Erro crítico ao registrar log: {e}")
