@@ -50,7 +50,7 @@ def registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=No
         status_txt = f"{Colors.GREEN}Dentro do limite{Colors.RESET}"
 
     # 4. RECUPERAÇÃO DE NOME
-    nome_visitante = "Avulso"
+    nome_visitante = "Rotativo"
     if ticket.id_visitante:
         visitante_obj = repositorio.buscar_visitante_por_id(ticket.id_visitante)
         if visitante_obj:
