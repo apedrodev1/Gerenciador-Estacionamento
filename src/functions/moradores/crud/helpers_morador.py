@@ -1,16 +1,17 @@
 """
 Helpers para CRUD de Moradores.
 Funções auxiliares para selecionar itens em listas e formatar saídas.
-Localização: src/functions/moradores/crud/helpers.py
+Localização: src/functions/moradores/crud/helpers_morador.py
 """
+import re
 from src.ui.colors import Colors
+from src.ui.tables import criar_tabela
 from src.utils.input_handler import get_valid_input
 
-def selecionar_morador(repositorio):
+def selecionar_morador(repositorio, apenas_listar=False):
     """
-    Lista todos os moradores e pede para o usuário escolher um pelo ID.
-    Faz o cruzamento (JOIN em memória) para exibir o número do apto em vez do ID.
-    Retorna: Objeto Morador ou None.
+    Lista todos os moradores.
+    Ordenação Inteligente: Bloco (A-Z) -> Número (Crescente).
     """
     moradores = repositorio.listar_moradores()
     
@@ -18,32 +19,60 @@ def selecionar_morador(repositorio):
         print(f"\n{Colors.YELLOW}⚠ Nenhum morador cadastrado.{Colors.RESET}")
         return None
 
-    # --- NOVO: BUSCA APARTAMENTOS PARA EXIBIÇÃO ---
-    # Precisamos traduzir "id_apartamento=5" para "101-A"
     lista_aptos = repositorio.listar_apartamentos()
-    
-    # Cria um dicionário rápido: { id: "Numero-Bloco" }
-    mapa_aptos = {a.id: a.rotulo for a in lista_aptos}
+    # Mapa guarda o objeto completo do apartamento, não só o rótulo
+    mapa_aptos = {a.id: a for a in lista_aptos}
 
-    print(f"\n{Colors.BOLD}--- LISTA DE MORADORES ---{Colors.RESET}")
-    print(f"{'ID':<5} | {'NOME':<30} | {'UNIDADE':<10}")
-    print("-" * 50)
-    
+    linhas = []
     for m in moradores:
-        # Busca o rótulo no mapa usando o ID (Foreign Key)
-        # Se não achar (banco inconsistente), mostra "---"
-        nome_apto = mapa_aptos.get(m.id_apartamento, "---")
+        apto = mapa_aptos.get(m.id_apartamento)
+        rotulo = apto.rotulo if apto else "---"
         
-        print(f"{m.id:<5} | {m.nome:<30} | {nome_apto:<10}")
+        # Guardamos dados brutos para ordenação escondida
+        # [ID_str, Nome, Rotulo_Visivel, Objeto_Apto]
+        linhas.append([str(m.id), m.nome, rotulo, apto])
+
+    # --- FUNÇÃO DE ORDENAÇÃO NATURAL ---
+    def chave_ordenacao(linha):
+        apto = linha[3] # Objeto Apartamento (coluna extra que não exibiremos)
+        if not apto:
+            return ("ZZZ", 999999) # Joga quem não tem apto pro final
+        
+        # Tenta extrair número inteiro do apto para ordenar 1, 2, 10...
+        # Se o numero for "101", vira 101. Se for "Térreo", vira 0 (ou outro critério)
+        try:
+            num = int(apto.numero)
+        except ValueError:
+            # Se tiver letras no número (ex: "101B"), usa regex para pegar só os dígitos
+            nums = re.findall(r'\d+', str(apto.numero))
+            num = int(nums[0]) if nums else 0
+
+        # Ordem de prioridade: 1º Bloco, 2º Número
+        # Bloco vazio ("") vira " " para vir antes de "A"
+        bloco = apto.bloco if apto.bloco else " "
+        
+        return (bloco, num)
+
+    # Aplica a ordenação
+    linhas.sort(key=chave_ordenacao)
+
+    # Remove a coluna extra (Objeto Apto) antes de exibir
+    dados_finais = [l[:3] for l in linhas]
+
+    titulo = "LISTA DE MORADORES" if apenas_listar else "SELECIONAR MORADOR"
     
-    print("-" * 50)
+    criar_tabela(
+        titulo=titulo,
+        colunas=["ID", "Nome", "Apartamento"],
+        linhas=dados_finais
+    )
     
-    # --- LÓGICA DE SELEÇÃO ---
+    if apenas_listar:
+        return None
+
     def validador_id(valor):
         if not valor.isdigit(): return None, "Digite um número."
         id_buscado = int(valor)
-        
-        # O repositório já devolve o objeto Morador completo
         morador = repositorio.buscar_morador_por_id(id_buscado)
         if morador: return morador, None
         return None, "ID não encontrado."
@@ -52,6 +81,6 @@ def selecionar_morador(repositorio):
     selecionado, _ = get_valid_input("Digite o ID do morador: ", validador_id)
     
     if selecionado and isinstance(selecionado, int) and selecionado == 0:
-        return None # Cancelou
+        return None 
         
     return selecionado
