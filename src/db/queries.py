@@ -7,7 +7,7 @@ Reflete a arquitetura Relacional: Apartamento -> Morador -> Veículo.
 # 1. CRIAÇÃO DE TABELAS (DDL)
 # ==============================================================================
 
-# [NOVO] Tabela Mestra de Unidades
+# Tabela de Apartamentos
 CREATE_TABLE_APARTAMENTOS = """
 CREATE TABLE IF NOT EXISTS apartamentos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS apartamentos (
 );
 """
 
-# [ALTERADO] Agora referencia a tabela apartamentos
+# Tabela de Moradores
 CREATE_TABLE_MORADORES = """
 CREATE TABLE IF NOT EXISTS moradores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS moradores (
 );
 """
 
-# [MANTIDO] Tabela de Pessoas (Visitantes)
+# Tabela de Visitantes Cadastrados
 CREATE_TABLE_VISITANTES_CADASTRO = """
 CREATE TABLE IF NOT EXISTS visitantes_cadastrados (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS visitantes_cadastrados (
 );
 """
 
-# [MANTIDO] Tabela Central de Carros
+# Tabela Central de Carros
 CREATE_TABLE_VEICULOS = """
 CREATE TABLE IF NOT EXISTS veiculos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS veiculos (
 );
 """
 
-# [MANTIDO] Tabela de Operação Rotativa
+# Tabela de Operação Rotativa
 CREATE_TABLE_TICKETS = """
 CREATE TABLE IF NOT EXISTS tickets_visitantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS tickets_visitantes (
 );
 """
 
+# Tabela de Histórico de Movimentação
 CREATE_TABLE_HISTORICO = """
 CREATE TABLE IF NOT EXISTS historico_movimentacao (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -187,7 +188,7 @@ SELECT
     NULL as apto_num,               -- Coluna 1 (Vazio para visitante)
     NULL as apto_bloco,             -- Coluna 2 (Vazio para visitante)
     t.numero_vaga as vaga_visitante,-- Coluna 3
-    COALESCE(vc.nome, 'AVULSO') as proprietario, -- Coluna 4
+    COALESCE(vc.nome, 'ROTATIVO') as proprietario, -- Coluna 4
     t.placa,                        -- Coluna 5
     COALESCE(v.modelo, '---') as modelo, -- Coluna 6 (Busca no carro, se não, ---)
     COALESCE(v.cor, '---') as cor        -- Coluna 7 (Busca no carro, se não, ---)
@@ -206,7 +207,7 @@ SELECT_HISTORICO_RECENTE = """
     SELECT data_hora, placa, tipo_veiculo, tipo_evento 
     FROM historico_movimentacao 
     ORDER BY id DESC 
-    LIMIT 50;
+    LIMIT 25;
 """
 
 SELECT_HISTORICO_BY_PLACA = """
