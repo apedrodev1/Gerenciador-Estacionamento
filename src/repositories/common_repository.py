@@ -16,7 +16,7 @@ class CommonRepository(BaseRepository):
             manager = self.conn if self.conn else self.db_manager.__enter__()
             
             # 1. Tabelas Independentes (Ordem Importa!)
-            manager.execute(queries.CREATE_TABLE_APARTAMENTOS) # <--- FALTAVA ESSA LINHA!
+            manager.execute(queries.CREATE_TABLE_APARTAMENTOS)
             manager.execute(queries.CREATE_TABLE_VISITANTES_CADASTRO)
             
             # 2. Tabelas Dependentes (Com Foreign Keys)
@@ -33,71 +33,69 @@ class CommonRepository(BaseRepository):
 
     def listar_ocupacao_completa(self):
         """
-        Gera o relatório do Mapa do Estacionamento.
+        Gera os dados para o Mapa do Estacionamento.
+        Retorna uma lista de Dicionários com as chaves exatas da Query.
         """
         cursor = self._get_cursor()
         lista = []
         try:
             cursor.execute(queries.SELECT_OCUPACAO_COMPLETA)
-            # Colunas da Query: tipo, apto_num, apto_bloco, vaga_visitante, proprietario, placa, modelo, cor
             
+            # A query retorna Tuplas. Vamos converter para Dicionário
+            # para facilitar o uso no front-end (mapa.py)
             for row in cursor.fetchall():
-                tipo, apto_num, apto_bloco, vaga_vis, prop, placa, modelo, cor = row
+                # Ordem definida no SELECT do queries.py:
+                # 0:tipo, 1:apto_num, 2:apto_bloco, 3:vaga_vis, 
+                # 4:proprietario, 5:placa, 6:modelo, 7:cor
                 
-                # Lógica de Exibição
-                if tipo == 'MORADOR':
-                    # Monta "101-A" ou só "101"
-                    bloco_str = f"-{apto_bloco}" if apto_bloco else ""
-                    identificador = f"Apto {apto_num}{bloco_str}"
-                else:
-                    identificador = f"Vaga {vaga_vis}"
-
-                lista.append({
-                    "vaga": identificador,
-                    "tipo": tipo,
-                    "nome": prop,
-                    "placa": placa,
-                    "modelo": modelo or "---",
-                    "cor": cor or "---"
-                })
+                item = {
+                    "tipo": row[0],            # 'MORADOR' ou 'VISITANTE'
+                    "apto_num": row[1],
+                    "apto_bloco": row[2],
+                    "vaga_visitante": row[3],
+                    "proprietario": row[4],    # Nome do dono
+                    "placa": row[5],
+                    "modelo": row[6],
+                    "cor": row[7]
+                }
+                lista.append(item)
+                
             return lista
         except Exception as e: 
             print(f"Erro ao gerar mapa: {e}") 
             return []
 
-
     def buscar_historico_por_placa(self, placa):
-            """Filtra logs por placa."""
-            cursor = self._get_cursor()
-            try:
-                cursor.execute(queries.SELECT_HISTORICO_BY_PLACA, (placa,))
-                return cursor.fetchall()
-            except Exception as e:
-                print(f"Erro ao buscar histórico da placa: {e}")
-                return []
-
+        """Filtra logs por placa."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_HISTORICO_BY_PLACA, (placa,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Erro ao buscar histórico da placa: {e}")
+            return []
             
     def listar_historico_recente(self):
-                """Retorna os últimos 50 eventos de entrada/saída."""
-                cursor = self._get_cursor()
-                try:
-                    cursor.execute(queries.SELECT_HISTORICO_RECENTE)
-                    return cursor.fetchall()
-                except Exception as e:
-                    print(f"❌ Erro ao buscar histórico: {e}")
-                    return []
-                    
+        """Retorna os últimos 50 eventos de entrada/saída."""
+        cursor = self._get_cursor()
+        try:
+            cursor.execute(queries.SELECT_HISTORICO_RECENTE)
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Erro ao buscar histórico: {e}")
+            return []
+            
     def listar_todas_cnhs(self):
-                """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
-                cursor = self._get_cursor()
-                cnhs = set()
-                try:
-                    cursor.execute("SELECT cnh FROM moradores")
-                    cnhs.update([r[0] for r in cursor.fetchall()])
-                    
-                    cursor.execute("SELECT cnh FROM visitantes_cadastrados")
-                    cnhs.update([r[0] for r in cursor.fetchall()])
-                    
-                    return cnhs
-                except Exception: 
-                    return set()
+        """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
+        cursor = self._get_cursor()
+        cnhs = set()
+        try:
+            cursor.execute("SELECT cnh FROM moradores")
+            cnhs.update([r[0] for r in cursor.fetchall()])
+            
+            cursor.execute("SELECT cnh FROM visitantes_cadastrados")
+            cnhs.update([r[0] for r in cursor.fetchall()])
+            
+            return cnhs
+        except Exception: 
+            return set()
