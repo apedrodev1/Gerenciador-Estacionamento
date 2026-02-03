@@ -2,7 +2,7 @@
 Módulo de Entrada de Visitantes (Catraca).
 Fluxo: 
 1. Verifica Vagas (Via Classe Estacionamento).
-2. Identifica Veículo (Frequente ou Avulso).
+2. Identifica Veículo (Frequente ou rotativo).
 3. Gera Ticket.
 Localização: src/functions/visitantes/catraca/entrada_visitante.py
 """
@@ -49,7 +49,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
     veiculo = repositorio.buscar_veiculo_por_placa(placa)
     
     id_visitante_vinculado = None
-    nome_motorista = "Avulso"
+    nome_motorista = "rotativo"
     
     # --- CENÁRIO A: CARRO JÁ CADASTRADO ---
     if veiculo:
@@ -64,9 +64,9 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
                 id_visitante_vinculado = visitante.id
                 nome_motorista = visitante.nome
 
-    # --- CENÁRIO B: CARRO DESCONHECIDO (AVULSO) ---
+    # --- CENÁRIO B: CARRO DESCONHECIDO (ROTATIVO) ---
     else:
-        print(f"\n{Colors.YELLOW}ℹ Visitante Avulso (Não cadastrado).{Colors.RESET}")
+        print(f"\n{Colors.YELLOW}ℹ Visitante Rotativo (Não cadastrado).{Colors.RESET}")
         print("Preencha dados básicos para o Ticket:")
         nome_motorista, _ = get_valid_input("Nome do Motorista: ", validate_names)
 
@@ -97,12 +97,12 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
             salvar, _ = get_valid_input("Salvar cadastro para a próxima vez? (s/n): ", validate_yes_no)
             
             if salvar == 's':
-                _converter_avulso_em_frequente(repositorio, nome_motorista, placa)
+                _converter_rotativo_em_frequente(repositorio, nome_motorista, placa)
 
     except Exception as e:
         show_error(f"Erro ao criar ticket: {e}")
 
-def _converter_avulso_em_frequente(repositorio, nome, placa):
+def _converter_rotativo_em_frequente(repositorio, nome, placa):
     try:
         print(f"{Colors.DIM}Criando cadastro...{Colors.RESET}")
         cnh, _ = get_valid_input("Digite a CNH para finalizar o cadastro: ", validate_cnh)
