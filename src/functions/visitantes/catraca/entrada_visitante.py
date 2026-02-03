@@ -121,6 +121,7 @@ def _converter_avulso_em_frequente(repositorio, nome, placa):
             estacionado=True
         )
         repositorio.adicionar_veiculo(novo_carro)
+        repositorio.vincular_cadastro_a_ticket(placa, id_pessoa)
         
         show_success("Cadastro Realizado!")
         
