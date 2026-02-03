@@ -1,7 +1,7 @@
 """
 Funcionalidade: Cadastro de Visitantes Frequentes.
 Permite registrar prestadores de serviço ou parentes e, opcionalmente, seus veículos.
-Localização: src/functions/visitantes/crud/cadastro.py
+Localização: src/functions/visitantes/crud/cadastro_visitante.py
 """
 from src.classes.Visitante.Visitante import Visitante
 from src.classes.Veiculo import Veiculo
@@ -17,7 +17,7 @@ def cadastrar_visitante_form(repositorio):
     Formulário para criar um novo Visitante Frequente.
     Separa a criação da Pessoa da criação do Veículo.
     """
-    header("NOVO VISITANTE FREQUENTE")
+    header("CADASTRAR NOVO VISITANTE")
     print(f"{Colors.DIM}ℹ Este cadastro agiliza a entrada de prestadores e parentes.{Colors.RESET}")
     
     # =========================================================================
@@ -61,7 +61,6 @@ def cadastrar_visitante_form(repositorio):
         cor = input("Cor: ").strip().upper()
     else:
         print(f"{Colors.DIM}>> Cadastro apenas da pessoa (sem veículo vinculado).{Colors.RESET}")
-        # FEATURE: PORTARIA SOCIAL V2
 
     # =========================================================================
     # PASSO 3: PERSISTÊNCIA
@@ -69,8 +68,7 @@ def cadastrar_visitante_form(repositorio):
     print(f"\n{Colors.DIM}Salvando registros...{Colors.RESET}")
     
     try:
-        # 1. Salva a PESSOA (VisitanteCadastrado)
-        # Nota: Data de cadastro é gerada automaticamente na classe
+        # 1. Salva a PESSOA (Visitante)
         novo_visitante = Visitante(nome=nome, cnh=cnh)
         
         # O repositório salva e retorna o ID gerado pelo banco
@@ -81,7 +79,8 @@ def cadastrar_visitante_form(repositorio):
 
         # 2. Salva o VEÍCULO (Se houver)
         msg_veiculo = "🚶 Sem veículo cadastrado."
-        
+        msg_ticket = ""
+
         if placa and modelo:
             novo_veiculo = Veiculo(
                 placa=placa,
@@ -92,12 +91,19 @@ def cadastrar_visitante_form(repositorio):
             )
             repositorio.adicionar_veiculo(novo_veiculo)
             msg_veiculo = f"🚗 {modelo} - {placa}"
-            
+
+            # --- CORREÇÃO: VINCULA TICKET AVULSO SE EXISTIR ---
+            # Se o carro já estiver no pátio como avulso, atualizamos o ticket agora!
+            ticket_ativo = repositorio.buscar_ticket_ativo(placa)
+            if ticket_ativo:
+                 repositorio.vincular_cadastro_a_ticket(placa, id_gerado)
+                 msg_ticket = f"\n{Colors.CYAN}ℹ Ticket ativo encontrado e atualizado para este cadastro.{Colors.RESET}"
+            # --------------------------------------------------
+
         show_success(f"Visitante Cadastrado com Sucesso!")
         print(f"👤 {nome}")
         print(msg_veiculo)
+        if msg_ticket: print(msg_ticket) 
         
     except Exception as e:
         show_error(f"Erro ao salvar no banco de dados: {e}")
-        # Sugestão futura: Rollback se falhar no meio
-        
