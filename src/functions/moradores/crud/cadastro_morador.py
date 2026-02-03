@@ -131,7 +131,7 @@ def cadastrar_morador_form(repositorio):
             raise ValueError("Falha ao gerar ID do morador.")
 
         # 2. Salva Veículo (Se aplicável)
-        msg_veiculo = "🚫 Sem veículo (Cota cheia ou não informado)"
+        msg_veiculo = "\n  🚫 Sem veículo (Cota cheia ou não informado)"
         
         if cadastrar_carro and placa:
             novo_veiculo = Veiculo(
@@ -142,13 +142,16 @@ def cadastrar_morador_form(repositorio):
                 estacionado=False
             )
             repositorio.adicionar_veiculo(novo_veiculo)
-            msg_veiculo = f"🚗 {modelo} - {placa}"
-        
-        show_success(f"Cadastro Realizado com Sucesso!")
-        print(msg_veiculo) # não quero mais estes detalhes, apenas a confirmação de que o cadastro foi feito, porem quando eu apago esta linha, o input "aperte ENTER para voltar..." aprarece 2x
+            msg_veiculo = f"\n   🚗 Veículo: {modelo} - {placa}"
+
+        msg_final = (
+            f"Cadastro Realizado!\n"
+            f"   🏠 Unidade: {apto_obj.rotulo}\n"
+            f"   👤 Morador: {nome}"
+            f"{msg_veiculo}\n"
+            f""
+        )
+        show_success(msg_final)
         
     except Exception as e:
         show_error(f"Erro ao salvar no banco de dados: {e}")
-        # Idealmente faríamos rollback aqui se o banco suportasse transação manual neste nível
-    
-    input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
