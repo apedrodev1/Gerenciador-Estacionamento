@@ -1,6 +1,6 @@
 """
 Menu: Gestão de Visitantes.
-Controlador Principal para o módulo de Visitantes Frequentes.
+Controlador Principal para o módulo de Visitantes.
 Responsabilidade: Roteador para Cadastro, Edição, Exclusão e Listagem.
 Localização: src/functions/visitantes/menu_visitante.py
 """
@@ -16,7 +16,7 @@ def executar_menu_visitantes(repositorio):
     """
     while True:
         clear_screen()
-        header("GESTÃO DE VISITANTES FREQUENTES ⭐")
+        header("GESTÃO DE VISITANTES")
         
         print(f"{Colors.BOLD}Escolha uma operação:{Colors.RESET}")
         print("1. Cadastrar Novo Frequentador")
