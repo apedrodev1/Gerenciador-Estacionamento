@@ -25,6 +25,9 @@ class CommonRepository(BaseRepository):
             manager.execute(queries.CREATE_TABLE_TICKETS)
             manager.execute(queries.CREATE_TABLE_HISTORICO)
             
+            # 3. Tabela de Usuários (Independente)
+            manager.execute(queries.CREATE_TABLE_USUARIOS)
+
             if not self.conn:
                 self.db_manager.__exit__(None, None, None)
                 
