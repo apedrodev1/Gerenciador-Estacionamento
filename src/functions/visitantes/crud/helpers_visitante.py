@@ -9,13 +9,13 @@ from src.utils.input_handler import get_valid_input
 
 def selecionar_visitante(repositorio, apenas_listar=False):
     """
-    Lista todos os visitantes frequentes cadastrados.
+    Lista todos os visitantes cadastrados.
     Ordenação: Alfabética (Nome).
     """
     visitantes = repositorio.listar_visitantes_cadastrados()
     
     if not visitantes:
-        print(f"\n{Colors.YELLOW}⚠ Nenhum visitante frequente cadastrado.{Colors.RESET}")
+        print(f"\n{Colors.YELLOW}⚠ Nenhum visitante cadastrado.{Colors.RESET}")
         return None
 
     # Prepara dados
