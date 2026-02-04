@@ -37,7 +37,6 @@ class TestIntegracaoVisitante:
         repo.veiculos.adicionar(carro)
         
         # 3. Verificação
-        # CORREÇÃO: Buscamos pela placa sanitizada (sem hífen), pois é assim que o banco guarda
         v_banco = repo.veiculos.buscar_por_placa("ABC1234")
         
         assert v_banco is not None
@@ -63,8 +62,8 @@ class TestIntegracaoVisitante:
         # CORREÇÃO: Buscamos pela placa limpa, pois é assim que está no banco
         ticket_antes = repo.tickets.buscar_ticket_ativo(placa_limpa)
         
-        assert ticket_antes is not None # Agora ele deve encontrar!
-        assert ticket_antes.id_visitante is None # Confirma que é avulso
+        assert ticket_antes is not None 
+        assert ticket_antes.id_visitante is None 
         
         # 2. Faz o Cadastro da Pessoa
         novo_vis = Visitante(nome="Dono do Carro", cnh="11122233344")

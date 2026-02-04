@@ -36,7 +36,6 @@ class TestFluxoMovimentacao:
         carro = Veiculo(placa="MOR-1234", modelo="Civic", cor="Preto", morador_id=id_mor)
         repo.veiculos.adicionar(carro)
         
-        # CORREÇÃO: Usamos carro.placa (que é "MOR1234") para garantir que bate com o banco
         placa_correta = carro.placa 
         
         # 2. REALIZAR ENTRADA
@@ -45,7 +44,7 @@ class TestFluxoMovimentacao:
         # Verificação 1: Carro deve constar como Estacionado no banco
         v_dentro = repo.veiculos.buscar_por_placa(placa_correta)
         
-        assert v_dentro is not None  # Agora vai achar!
+        assert v_dentro is not None  
         assert v_dentro.estacionado is True
         
         # 3. REALIZAR SAÍDA

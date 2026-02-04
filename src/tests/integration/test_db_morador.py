@@ -75,7 +75,6 @@ class TestIntegracaoMorador:
         repo.apartamentos.adicionar(apto)
         apto_banco = repo.apartamentos.buscar_por_rotulo("200", "B")
         
-        # CORREÇÃO: Usando argumentos nomeados aqui também!
         m = Morador(
             nome="Deletável", 
             cnh="11111111111", 
