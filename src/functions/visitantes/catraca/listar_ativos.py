@@ -78,7 +78,6 @@ def listar_visitantes_ativos(repositorio):
         colunas=["Vaga", "Placa", "Identificação", "Entrada", "Tempo", "Status"],
         linhas=dados_linhas
     )
-
     console.print(f"\n[dim]Total Visitantes: {len(tickets)} | [/dim]")
     
     input(f"{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
