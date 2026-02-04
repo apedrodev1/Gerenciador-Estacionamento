@@ -6,13 +6,14 @@ Localização: src/repositories/estacionamento_repository.py
 """
 from src.utils.db_connection import DatabaseManager
 
-# Importa os 6 Repositórios Especializados (Incluindo ApartamentoRepository)
+# Importa os Repositórios Especializados
 from src.repositories.common_repository import CommonRepository
 from src.repositories.apartamento_repository import ApartamentoRepository
 from src.repositories.morador_repository import MoradorRepository
 from src.repositories.visitante_repository import VisitanteRepository
 from src.repositories.veiculo_repository import VeiculoRepository
 from src.repositories.ticket_repository import TicketRepository
+from src.repositories.usuario_repository import UsuarioRepository # <--- Importado
 
 class EstacionamentoRepository:
     def __init__(self, db_path: str):
@@ -21,11 +22,12 @@ class EstacionamentoRepository:
         
         # --- Inicializa os Especialistas ---
         self.common = CommonRepository(self.db_manager)
-        self.apartamentos = ApartamentoRepository(self.db_manager) # [NOVO]
+        self.apartamentos = ApartamentoRepository(self.db_manager)
         self.moradores = MoradorRepository(self.db_manager)
         self.visitantes = VisitanteRepository(self.db_manager)
         self.veiculos = VeiculoRepository(self.db_manager)
         self.tickets = TicketRepository(self.db_manager)
+        self.usuarios = UsuarioRepository(self.db_manager)
         
         # Garante que as tabelas existam (DDL)
         self.common.criar_tabelas()
@@ -36,11 +38,12 @@ class EstacionamentoRepository:
         
         # Injeta a conexão ativa em todos
         self.common.set_connection(self.conn)
-        self.apartamentos.set_connection(self.conn) # [NOVO]
+        self.apartamentos.set_connection(self.conn)
         self.moradores.set_connection(self.conn)
         self.visitantes.set_connection(self.conn)
         self.veiculos.set_connection(self.conn)
         self.tickets.set_connection(self.conn)
+        self.usuarios.set_connection(self.conn)
         
         return self
 
@@ -56,6 +59,7 @@ class EstacionamentoRepository:
         self.visitantes.set_connection(None)
         self.veiculos.set_connection(None)
         self.tickets.set_connection(None)
+        self.usuarios.set_connection(None)
 
     # =========================================================================
     # ÁREA DE DELEGAÇÃO (Fachada)
@@ -66,7 +70,7 @@ class EstacionamentoRepository:
     def listar_historico_recente(self): return self.common.listar_historico_recente()
     def listar_todas_cnhs(self): return self.common.listar_todas_cnhs()
 
-    # --- 2. APARTAMENTOS (NOVO BLOCO) ---
+    # --- 2. APARTAMENTOS ---
     def criar_apartamento(self, apto): return self.apartamentos.adicionar(apto)
     def listar_apartamentos(self): return self.apartamentos.listar()
     def buscar_apartamento_por_rotulo(self, num, bloco=""): return self.apartamentos.buscar_por_rotulo(num, bloco)
@@ -79,7 +83,7 @@ class EstacionamentoRepository:
     def atualizar_morador(self, m): return self.moradores.atualizar(m)
     def remover_morador(self, id): return self.moradores.remover(id)
     
-    # Buscas Relacionadas a Apto (Atualizadas para usar ID)
+    # Buscas Relacionadas a Apto
     def buscar_moradores_por_id_apartamento(self, id_apto): 
         return self.moradores.buscar_por_id_apartamento(id_apto)
     
