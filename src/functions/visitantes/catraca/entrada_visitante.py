@@ -2,7 +2,7 @@
 Módulo de Entrada de Visitantes (Catraca).
 Fluxo: 
 1. Verifica Vagas (Via Classe Estacionamento).
-2. Identifica Veículo (Frequente ou rotativo).
+2. Identifica Veículo (cadastrado ou rotativo).
 3. Gera Ticket.
 Localização: src/functions/visitantes/catraca/entrada_visitante.py
 """
@@ -97,12 +97,12 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
             salvar, _ = get_valid_input("Salvar cadastro para a próxima vez? (s/n): ", validate_yes_no)
             
             if salvar == 's':
-                _converter_rotativo_em_frequente(repositorio, nome_motorista, placa)
+                _converter_rotativo_em_cadastrado(repositorio, nome_motorista, placa)
 
     except Exception as e:
         show_error(f"Erro ao criar ticket: {e}")
 
-def _converter_rotativo_em_frequente(repositorio, nome, placa):
+def _converter_rotativo_em_cadastrado(repositorio, nome, placa):
     try:
         print(f"{Colors.DIM}Criando cadastro...{Colors.RESET}")
         cnh, _ = get_valid_input("Digite a CNH para finalizar o cadastro: ", validate_cnh)
