@@ -1,6 +1,6 @@
 """
 Classe Visitante (Entidade)
-Responsabilidade: Representar a Pessoa (Cadastro Frequente).
+Responsabilidade: Representar a Pessoa (Cadastro).
 Nota: Não guarda dados do carro. O vínculo é feito na classe Veiculo (campo visitante_id).
 """
 from datetime import datetime
