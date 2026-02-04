@@ -1,5 +1,5 @@
 """
-Funcionalidade: Cadastro de Visitantes 
+Funcionalidade: Cadastro de Visitantes Frequentes.
 Permite registrar prestadores de serviço ou parentes e, opcionalmente, seus veículos.
 Localização: src/functions/visitantes/crud/cadastro_visitante.py
 """
@@ -14,7 +14,7 @@ from src.ui.components import header, show_success, show_error
 
 def cadastrar_visitante_form(repositorio):
     """
-    Formulário para criar um novo Visitante 
+    Formulário para criar um novo Visitante Frequente.
     Separa a criação da Pessoa da criação do Veículo.
     """
     header("CADASTRAR NOVO VISITANTE")
@@ -92,8 +92,8 @@ def cadastrar_visitante_form(repositorio):
             repositorio.adicionar_veiculo(novo_veiculo)
             msg_veiculo = f"🚗 {modelo} - {placa}"
 
-            # --- CORREÇÃO: VINCULA TICKET AVULSO SE EXISTIR ---
-            # Se o carro já estiver no pátio como avulso, atualizamos o ticket agora!
+            # VINCULA TICKET Rotativo SE EXISTIR ---
+            # Se o carro já estiver no pátio como Rotativo, atualizamos o ticket agora!
             ticket_ativo = repositorio.buscar_ticket_ativo(placa)
             if ticket_ativo:
                  repositorio.vincular_cadastro_a_ticket(placa, id_gerado)
