@@ -1,5 +1,5 @@
 """
-Funcionalidade: Remoção de Visitantes Frequentes.
+Funcionalidade: Remoção de Visitantes.
 Remove o registro da pessoa e, automaticamente (Cascade), seus veículos vinculados.
 Localização: src/functions/visitantes/crud/exclusao.py
 """
@@ -27,7 +27,7 @@ def remover_visitante_form(repositorio):
 
     # 3. Exibe o Alerta
     print(f"\n{Colors.RED}{Colors.BOLD}⚠ ATENÇÃO: EXCLUSÃO DE REGISTRO{Colors.RESET}")
-    print(f"Você está prestes a excluir o visitante frequente:")
+    print(f"Você está prestes a excluir:")
     print(f"👤 {visitante.nome} (ID: {visitante.id})")
     
     if veiculos:
