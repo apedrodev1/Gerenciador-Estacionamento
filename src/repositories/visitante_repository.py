@@ -1,6 +1,6 @@
 """
 Repositório Especializado: Visitantes Cadastrados.
-Responsabilidade: CRUD de PESSOAS (Visitantes Frequentes/Prestadores).
+Responsabilidade: CRUD de Visitantes.
 Não lida com veículos ou tickets de catraca.
 Localização: src/repositories/visitante_repository.py
 """
