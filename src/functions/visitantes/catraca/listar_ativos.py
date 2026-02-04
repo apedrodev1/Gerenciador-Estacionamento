@@ -6,12 +6,15 @@ Localização: src/functions/visitantes/catraca/listar_ativos.py
 from datetime import datetime
 from src.ui.tables import criar_tabela
 from src.ui.colors import Colors
+from rich.console import Console
 
 def listar_visitantes_ativos(repositorio):
     """
     Lista todos os tickets ativos.
     Calcula o tempo de permanência em tempo real e identifica se é Avulso ou Cadastrado.
     """
+    console = Console()
+
     # 1. Busca todos os tickets abertos (que não têm data de saída)
     # Certifique-se de que o TicketRepository tenha este método implementado
     tickets = repositorio.listar_tickets_ativos()
@@ -37,12 +40,12 @@ def listar_visitantes_ativos(repositorio):
         
         # --- Identificação (Join Manual) ---
         if t.id_visitante:
-            # É um visitante frequente: buscamos o nome
+            # É um visitante cadastrado: buscamos o nome
             visitante = repositorio.buscar_visitante_por_id(t.id_visitante)
-            nome_exibicao = f"{visitante.nome} [cyan](Freq)[/]" if visitante else "Desconhecido"
+            nome_exibicao = f"{visitante.nome}" if visitante else "Desconhecido"
         else:
             # É avulso
-            nome_exibicao = "[dim]Avulso (Rotativo)[/]"
+            nome_exibicao = "[dim]Rotativo[/]"
 
         # --- Status / Regra de Negócio Visual ---
         # Exemplo: Se passar de 24h, marca como ALERTA. 
@@ -71,9 +74,11 @@ def listar_visitantes_ativos(repositorio):
 
     # 3. Renderiza a Tabela
     criar_tabela(
-        titulo=f"VISITANTES NO PÁTIO: ({len(tickets)})", # pensar em apagar
+        titulo=f"VISITANTES NO PÁTIO:",
         colunas=["Vaga", "Placa", "Identificação", "Entrada", "Tempo", "Status"],
         linhas=dados_linhas
     )
+
+    console.print(f"\n[dim]Total Visitantes: {len(tickets)} | [/dim]")
     
-    input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
+    input(f"{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
