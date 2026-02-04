@@ -1,5 +1,5 @@
 """
-Funcionalidade: Cadastro de Visitantes Frequentes.
+Funcionalidade: Cadastro de Visitantes 
 Permite registrar prestadores de serviço ou parentes e, opcionalmente, seus veículos.
 Localização: src/functions/visitantes/crud/cadastro_visitante.py
 """
@@ -14,7 +14,7 @@ from src.ui.components import header, show_success, show_error
 
 def cadastrar_visitante_form(repositorio):
     """
-    Formulário para criar um novo Visitante Frequente.
+    Formulário para criar um novo Visitante 
     Separa a criação da Pessoa da criação do Veículo.
     """
     header("CADASTRAR NOVO VISITANTE")
