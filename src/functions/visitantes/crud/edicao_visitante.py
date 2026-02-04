@@ -1,5 +1,5 @@
 """
-Funcionalidade: Edição de Visitantes Frequentes.
+Funcionalidade: Edição de Visitantes 
 Permite alterar dados pessoais e gerenciar a frota (adicionar/remover carros).
 Localização: src/functions/visitantes/crud/edicao.py
 """
