@@ -52,8 +52,8 @@ def _renderizar_tabela_historico(dados, titulo="HISTÓRICO"):
     input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
 
 def relatorio_geral(repositorio):
-    """Mostra as últimas 50 movimentações do estacionamento."""
-    header("RELATÓRIO DE MOVIMENTAÇÃO (ÚLTIMOS 50)")
+    """Mostra as últimas 25 movimentações do estacionamento."""
+    header("RELATÓRIO DE MOVIMENTAÇÃO (ÚLTIMOS 25)")
     try:
         dados = repositorio.listar_historico_recente()
         _renderizar_tabela_historico(dados, titulo="EXTRATO GERAL")
@@ -75,7 +75,7 @@ def menu_relatorios(repositorio):
     """Sub-menu de relatórios padronizado."""
     while True:
         header("RELATÓRIOS E AUDITORIA 📋")
-        menu_option("1", "Histórico Geral (Últimos 50)")
+        menu_option("1", "Histórico Geral (Últimos 25)")
         menu_option("2", "Filtrar por Placa")
         print("-" * 30)
         menu_option("0", "Voltar")
