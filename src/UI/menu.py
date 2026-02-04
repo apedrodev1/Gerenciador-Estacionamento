@@ -60,7 +60,7 @@ def executar_menu_principal(repo, estacionamento):
             
             print(f"{Colors.BOLD} 🏢 GESTÃO ADMINISTRATIVA{Colors.RESET}")
             menu_option("3", "Gestão de MORADORES & APARTAMENTOS") 
-            menu_option("4", "Gestão de VISITANTES FREQUENTES") 
+            menu_option("4", "Gestão de VISITANTES") 
             print("")
             
             print(f"{Colors.BOLD} 📊 AUDITORIA & RELATÓRIOS{Colors.RESET}")
