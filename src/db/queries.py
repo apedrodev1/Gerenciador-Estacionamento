@@ -35,10 +35,10 @@ CREATE TABLE IF NOT EXISTS funcionarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     cpf TEXT UNIQUE NOT NULL,
-    cargo TEXT NOT NULL,        -- Ex: Porteiro, Zelador, Gerente Predial
-    turno TEXT NOT NULL,        -- Ex: Manhã, Tarde, Noite, 12x36
+    cargo TEXT NOT NULL,
+    cnh TEXT,                   -- Opcional (pode ser NULL)
     ativo BOOLEAN DEFAULT 1,    -- 1=Ativo, 0=Demitido/Inativo
-    id_usuario INTEGER,         -- Vínculo opcional com a tabela de usuários (Login)
+    id_usuario INTEGER,         -- Vínculo opcional com Login
     FOREIGN KEY(id_usuario) REFERENCES usuarios(id)
 );
 """
@@ -143,8 +143,6 @@ SET nome=?, cargo=?, turno=?, id_usuario=?
 WHERE id=?;
 """
 DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
-
-
 
 
 # ==============================================================================
@@ -255,21 +253,20 @@ SELECT_HISTORICO_BY_PLACA = """
 # ==============================================================================
 # 9. USUÁRIOS E AUTENTICAÇÃO
 # ==============================================================================
-CREATE_TABLE_USUARIOS = """
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    senha_hash BYTES NOT NULL,  -- Importante: O hash é binário (bytes)
-    perfil TEXT NOT NULL        -- 'portaria', 'administrativo', 'gerencia'
-);
+
+INSERT_FUNCIONARIO = """
+INSERT INTO funcionarios (nome, cpf, cargo, cnh, id_usuario) 
+VALUES (?, ?, ?, ?, ?);
 """
 
-INSERT_USUARIO = "INSERT INTO usuarios (username, senha_hash, perfil) VALUES (?, ?, ?);"
+SELECT_ALL_FUNCIONARIOS = "SELECT * FROM funcionarios WHERE ativo = 1;"
 
-SELECT_USUARIO_BY_USERNAME = "SELECT * FROM usuarios WHERE username = ?;"
+SELECT_FUNCIONARIO_BY_CPF = "SELECT * FROM funcionarios WHERE cpf = ?;"
 
-SELECT_ALL_USUARIOS = "SELECT id, username, perfil FROM usuarios;" 
+UPDATE_FUNCIONARIO = """
+UPDATE funcionarios 
+SET nome=?, cargo=?, cnh=?, id_usuario=? 
+WHERE id=?;
+"""
 
-DELETE_USUARIO = "DELETE FROM usuarios WHERE id = ?;"
-
-UPDATE_SENHA_USUARIO = "UPDATE usuarios SET senha_hash = ? WHERE id = ?;"
+DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
