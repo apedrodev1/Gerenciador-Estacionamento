@@ -22,6 +22,7 @@ class CommonRepository(BaseRepository):
             # 2. Tabelas Dependentes (Com Foreign Keys)
             manager.execute(queries.CREATE_TABLE_MORADORES) # Depende de Apartamentos
             manager.execute(queries.CREATE_TABLE_VEICULOS)  # Depende de Moradores
+            manager.execute(queries.CREATE_TABLE_FUNCIONARIOS) # Depende de Moradores
             manager.execute(queries.CREATE_TABLE_TICKETS)
             manager.execute(queries.CREATE_TABLE_HISTORICO)
             
