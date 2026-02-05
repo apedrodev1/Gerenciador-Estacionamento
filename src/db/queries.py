@@ -4,7 +4,7 @@ Reflete a arquitetura Relacional: Apartamento -> Morador -> Veículo.
 """
 
 # ==============================================================================
-# 1. CRIAÇÃO DE TABELAS (DDL)
+# 0. CRIAÇÃO DE TABELAS (DDL)
 # ==============================================================================
 
 # Tabela de Apartamentos
@@ -26,6 +26,20 @@ CREATE TABLE IF NOT EXISTS moradores (
     cnh TEXT NOT NULL,
     id_apartamento INTEGER NOT NULL,
     FOREIGN KEY(id_apartamento) REFERENCES apartamentos(id) ON DELETE CASCADE
+);
+"""
+
+# Tabela de Funcionários
+CREATE_TABLE_FUNCIONARIOS = """
+CREATE TABLE IF NOT EXISTS funcionarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    cpf TEXT UNIQUE NOT NULL,
+    cargo TEXT NOT NULL,        -- Ex: Porteiro, Zelador, Gerente Predial
+    turno TEXT NOT NULL,        -- Ex: Manhã, Tarde, Noite, 12x36
+    ativo BOOLEAN DEFAULT 1,    -- 1=Ativo, 0=Demitido/Inativo
+    id_usuario INTEGER,         -- Vínculo opcional com a tabela de usuários (Login)
+    FOREIGN KEY(id_usuario) REFERENCES usuarios(id)
 );
 """
 
@@ -79,7 +93,7 @@ CREATE TABLE IF NOT EXISTS historico_movimentacao (
 
 
 # ==============================================================================
-# 2. APARTAMENTOS (NOVO CRUD)
+# 1. APARTAMENTOS (NOVO CRUD)
 # ==============================================================================
 
 INSERT_APARTAMENTO = "INSERT INTO apartamentos (numero, bloco, vagas) VALUES (?, ?, ?);"
@@ -93,7 +107,7 @@ SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND
 
 
 # ==============================================================================
-# 3. MORADORES (CRUD Atualizado)
+# 2. MORADORES (CRUD Atualizado)
 # ==============================================================================
 
 # Agora salvamos o ID do apartamento, não o número direto
@@ -110,6 +124,27 @@ SELECT_MORADORES_BY_APTO_ID = "SELECT * FROM moradores WHERE id_apartamento = ?;
 UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;"
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
+
+
+# ==============================================================================
+# 3. GESTÃO DE RH (FUNCIONÁRIOS)
+# ==============================================================================
+
+INSERT_FUNCIONARIO = """
+INSERT INTO funcionarios (nome, cpf, cargo, turno, id_usuario) 
+VALUES (?, ?, ?, ?, ?);
+"""
+
+SELECT_ALL_FUNCIONARIOS = "SELECT * FROM funcionarios WHERE ativo = 1;"
+SELECT_FUNCIONARIO_BY_CPF = "SELECT * FROM funcionarios WHERE cpf = ?;"
+UPDATE_FUNCIONARIO = """
+UPDATE funcionarios 
+SET nome=?, cargo=?, turno=?, id_usuario=? 
+WHERE id=?;
+"""
+DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
+
+
 
 
 # ==============================================================================
