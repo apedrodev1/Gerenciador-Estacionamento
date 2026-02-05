@@ -10,10 +10,11 @@ from src.utils.db_connection import DatabaseManager
 from src.repositories.common_repository import CommonRepository
 from src.repositories.apartamento_repository import ApartamentoRepository
 from src.repositories.morador_repository import MoradorRepository
+from src.repositories.funcionario_repository import FuncionarioRepository
 from src.repositories.visitante_repository import VisitanteRepository
 from src.repositories.veiculo_repository import VeiculoRepository
 from src.repositories.ticket_repository import TicketRepository
-from src.repositories.usuario_repository import UsuarioRepository # <--- Importado
+from src.repositories.usuario_repository import UsuarioRepository 
 
 class EstacionamentoRepository:
     def __init__(self, db_path: str):
@@ -24,6 +25,7 @@ class EstacionamentoRepository:
         self.common = CommonRepository(self.db_manager)
         self.apartamentos = ApartamentoRepository(self.db_manager)
         self.moradores = MoradorRepository(self.db_manager)
+        self.funcionarios = FuncionarioRepository(self.db_manager)
         self.visitantes = VisitanteRepository(self.db_manager)
         self.veiculos = VeiculoRepository(self.db_manager)
         self.tickets = TicketRepository(self.db_manager)
@@ -40,6 +42,7 @@ class EstacionamentoRepository:
         self.common.set_connection(self.conn)
         self.apartamentos.set_connection(self.conn)
         self.moradores.set_connection(self.conn)
+        self.funcionarios.set_connection(self.conn)
         self.visitantes.set_connection(self.conn)
         self.veiculos.set_connection(self.conn)
         self.tickets.set_connection(self.conn)
@@ -56,6 +59,7 @@ class EstacionamentoRepository:
         self.common.set_connection(None)
         self.apartamentos.set_connection(None)
         self.moradores.set_connection(None)
+        self.funcionarios.set_connection(None)
         self.visitantes.set_connection(None)
         self.veiculos.set_connection(None)
         self.tickets.set_connection(None)
@@ -89,15 +93,20 @@ class EstacionamentoRepository:
     
     def listar_ids_apartamentos_ocupados(self): 
         return self.moradores.listar_ids_apartamentos_ocupados()
+    
 
-    # --- 4. VISITANTES ---
+    # --- 4. RH (FUNCIONÁRIOS) ---
+    def adicionar_funcionario(self, f): return self.funcionarios.adicionar(f)
+    def listar_funcionarios(self): return self.funcionarios.listar()
+
+    # --- 5. VISITANTES ---
     def adicionar_visitante_cadastro(self, v): return self.visitantes.adicionar(v)
     def listar_visitantes_cadastrados(self): return self.visitantes.listar()
     def buscar_visitante_por_id(self, id): return self.visitantes.buscar_por_id(id)
     def atualizar_visitante_cadastro(self, v): return self.visitantes.atualizar(v)
     def remover_visitante_cadastro(self, id): return self.visitantes.remover(id)
 
-    # --- 5. VEÍCULOS ---
+    # --- 6. VEÍCULOS ---
     def adicionar_veiculo(self, v): return self.veiculos.adicionar(v)
     def listar_veiculos_por_morador(self, id_morador): return self.veiculos.listar_por_morador(id_morador)
     def listar_veiculos_por_visitante(self, id_visitante): return self.veiculos.listar_por_visitante(id_visitante)
@@ -110,7 +119,7 @@ class EstacionamentoRepository:
     def registrar_entrada_veiculo(self, placa, tipo_dono): return self.veiculos.registrar_entrada(placa, tipo_dono)
     def registrar_saida_veiculo(self, placa, tipo_dono): return self.veiculos.registrar_saida(placa, tipo_dono)
 
-    # --- 6. TICKETS ---
+    # --- 7. TICKETS ---
     def criar_ticket(self, t): return self.tickets.criar_ticket(t)
     def vincular_cadastro_a_ticket(self, placa, id_visitante): self.tickets.vincular_cadastro_a_ticket(placa, id_visitante)
     def buscar_ticket_ativo(self, placa): return self.tickets.buscar_ticket_ativo(placa)
