@@ -4,83 +4,96 @@ Funções auxiliares para selecionar itens em listas e formatar saídas.
 Localização: src/functions/moradores/crud/helpers_morador.py
 """
 import re
-from src.ui.colors import Colors
-from src.ui.tables import criar_tabela
-from src.utils.input_handler import get_valid_input
+from rich.console import Console
+from rich.table import Table
+from src.utils.input_handler import get_valid_input, clear_screen
+
+console = Console()
 
 def selecionar_morador(repositorio, apenas_listar=False):
     """
-    Lista todos os moradores.
+    Lista todos os moradores usando Rich Tables.
     Ordenação Inteligente: Bloco (A-Z) -> Número (Crescente).
     """
+    clear_screen()
+
     moradores = repositorio.listar_moradores()
     
     if not moradores:
-        print(f"\n{Colors.YELLOW}⚠ Nenhum morador cadastrado.{Colors.RESET}")
+        console.print("\n[bold yellow]⚠ Nenhum morador cadastrado.[/]")
         return None
 
+    # --- 1. Preparação dos Dados (Mapa de Apartamentos) ---
     lista_aptos = repositorio.listar_apartamentos()
-    # Mapa guarda o objeto completo do apartamento, não só o rótulo
     mapa_aptos = {a.id: a for a in lista_aptos}
 
-    linhas = []
+    # Criamos uma lista de tuplas (Morador, Apartamento) para facilitar a ordenação
+    dados_completos = []
     for m in moradores:
         apto = mapa_aptos.get(m.id_apartamento)
-        rotulo = apto.rotulo if apto else "---"
-        
-        # Guardamos dados brutos para ordenação escondida
-        # [ID_str, Nome, Rotulo_Visivel, Objeto_Apto]
-        linhas.append([str(m.id), m.nome, rotulo, apto])
+        dados_completos.append((m, apto))
 
-    # --- FUNÇÃO DE ORDENAÇÃO NATURAL ---
-    def chave_ordenacao(linha):
-        apto = linha[3] # Objeto Apartamento (coluna extra que não exibiremos)
-        if not apto:
-            return ("ZZZ", 999999) # Joga quem não tem apto pro final
+    # --- 2. Lógica de Ordenação Natural (Bloco -> Número) ---
+    def chave_ordenacao(item):
+        _, apto = item # Desempacota a tupla
         
-        # Tenta extrair número inteiro do apto para ordenar 1, 2, 10...
-        # Se o numero for "101", vira 101. Se for "Térreo", vira 0 (ou outro critério)
+        if not apto:
+            # Joga quem não tem apto pro final da lista (ZZZ)
+            return ("ZZZ", 999999) 
+        
+        # Extrai número (ex: "101" -> 101, "101B" -> 101, "Térreo" -> 0)
         try:
             num = int(apto.numero)
         except ValueError:
-            # Se tiver letras no número (ex: "101B"), usa regex para pegar só os dígitos
+            # Regex para pegar apenas dígitos de strings como "101B"
             nums = re.findall(r'\d+', str(apto.numero))
             num = int(nums[0]) if nums else 0
 
-        # Ordem de prioridade: 1º Bloco, 2º Número
-        # Bloco vazio ("") vira " " para vir antes de "A"
+        # Bloco vazio vira espaço " " para aparecer antes de "A"
         bloco = apto.bloco if apto.bloco else " "
         
         return (bloco, num)
 
     # Aplica a ordenação
-    linhas.sort(key=chave_ordenacao)
+    dados_completos.sort(key=chave_ordenacao)
 
-    # Remove a coluna extra (Objeto Apto) antes de exibir
-    dados_finais = [l[:3] for l in linhas]
-
+    # --- 3. Montagem da Tabela Rich ---
     titulo = "LISTA DE MORADORES" if apenas_listar else "SELECIONAR MORADOR"
+    table = Table(title=f"📋 {titulo}", show_header=True, header_style="bold magenta")
     
-    criar_tabela(
-        titulo=titulo,
-        colunas=["ID", "Nome", "Apartamento"],
-        linhas=dados_finais
-    )
+    table.add_column("ID", style="cyan", justify="center", width=4)
+    table.add_column("Nome", style="green")
+    table.add_column("Apartamento", style="bold white")
+
+    for morador, apto in dados_completos:
+        rotulo_apto = apto.rotulo if apto else "[dim]---[/]"
+        table.add_row(str(morador.id), morador.nome, rotulo_apto)
+
+    console.print(table)
     
     if apenas_listar:
         return None
 
-    def validador_id(valor):
-        if not valor.isdigit(): return None, "Digite um número."
-        id_buscado = int(valor)
-        morador = repositorio.buscar_morador_por_id(id_buscado)
-        if morador: return morador, None
-        return None, "ID não encontrado."
+    # --- 4. Validador para o Input Handler ---
+    def validador_id(valor_str):
+        if not valor_str.isdigit():
+            return None, "Digite apenas números."
+        
+        id_int = int(valor_str)
+        if id_int == 0:
+            return 0, None # Código de saída/cancelamento
+        
+        morador = repositorio.buscar_morador_por_id(id_int)
+        if morador:
+            return morador, None
+        
+        return None, "ID não encontrado no sistema."
 
-    print(f"\n{Colors.DIM}(Digite 0 para cancelar){Colors.RESET}")
-    selecionado, _ = get_valid_input("Digite o ID do morador: ", validador_id)
+    # --- 5. Captura com Loop ---
+    console.print("\n[dim](Digite 0 para cancelar)[/]")
+    selecionado, _ = get_valid_input("Digite o ID do Morador", validador_id)
     
-    if selecionado and isinstance(selecionado, int) and selecionado == 0:
-        return None 
+    if selecionado == 0:
+        return None
         
     return selecionado
