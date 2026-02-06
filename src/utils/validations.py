@@ -18,6 +18,23 @@ def validate_names(name):
         return cleaned, None
     return None, "O nome deve conter apenas letras."
 
+def validate_cargo(text):
+    """
+    Valida cargos/profissões.
+    Aceita: Letras, Espaços, Números, Hífens e Pontos.
+    Exemplos válidos: "Porteiro", "Vigia 12x36", "Auxiliar-Geral", "T.I."
+    """
+    cleaned = text.strip().title()
+    
+    if not cleaned:
+        return None, "O cargo não pode ficar vazio."
+    
+    # Regex: \w (letras/números), \s (espaço), - (hífen), . (ponto)
+    if re.match(r'^[\w\s\-\.]+$', cleaned):
+        return cleaned, None
+        
+    return None, "O cargo contém caracteres inválidos (use apenas letras, números e hífens)."
+
 def validate_yes_no(input_value):
     """Aceita s/n ou y/n."""
     cleaned = input_value.strip().lower()
