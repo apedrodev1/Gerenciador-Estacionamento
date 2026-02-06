@@ -10,8 +10,11 @@ def selecionar_funcionario(repositorio, apenas_listar=False):
     """
     funcionarios = repositorio.listar_funcionarios()
     
+    # --- CORREÇÃO DO FLASH AQUI ---
     if not funcionarios:
         console.print("\n[bold yellow]⚠ Nenhum funcionário ativo encontrado.[/]")
+        # A PAUSA NECESSÁRIA:
+        input("Pressione ENTER para voltar...") 
         return None
 
     # --- Tabela Rich ---
