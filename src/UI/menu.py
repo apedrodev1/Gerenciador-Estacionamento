@@ -13,14 +13,13 @@ from src.functions.catraca.controle_acesso import registrar_acesso_unificado
 from src.functions.visitantes.catraca.listar_ativos import listar_visitantes_ativos
 from src.functions.visitantes.menu_visitante import executar_menu_visitantes
 from src.functions.moradores.menu_morador import executar_menu_moradores
+from src.functions.funcionarios.menu_funcionario import executar_menu_funcionarios
 from src.functions.relatorios.exibir_relatorios import menu_relatorios 
 
 def exibir_dashboard_topo(estacionamento, repo, usuario):
     """Monta o cabeçalho dinâmico com estatísticas e nome do usuário."""
     
-    # Busca contagem de tickets ativos (Visitantes no pátio)
     tickets_ativos = len(repo.listar_tickets_ativos())
-    
     livres = estacionamento.capacidade_visitantes - tickets_ativos
 
     if livres <= 0:
@@ -30,12 +29,11 @@ def exibir_dashboard_topo(estacionamento, repo, usuario):
         cor_status = Colors.GREEN
         texto_status = f"{livres} VAGAS LIVRES ✅"
 
-    # Mostra quem está logado no subtítulo
     subtitulo = f"Status: {texto_status} | 👤 {usuario.username} ({usuario.perfil.upper()})"
     header(estacionamento.nome, subtitulo)
 
 def criar_novo_usuario_sistema(repo):
-    """Tela exclusiva de gerente para criar novos acessos."""
+    """Tela exclusiva de gerente para criar novos acessos (Login)."""
     clear_screen()
     header("NOVO USUÁRIO DO SISTEMA", "Acesso Restrito à Gerência")
     
@@ -65,75 +63,82 @@ def executar_menu_principal(repo, estacionamento, usuario):
     
     with repo:
         while True:
-            # 1. Desenha Cabeçalho (Agora com nome do usuário)
+            # 1. Cabeçalho
             exibir_dashboard_topo(estacionamento, repo, usuario)
 
-            # 2. Desenha Opções (Filtradas por Perfil)
+            # 2. Opções (Visualização Condicional)
             
-            # --- BLOCO 1: OPERAÇÃO (Todos veem) ---
-            print(f"{Colors.BOLD} 🚧 OPERAÇÃO DIÁRIA (PORTARIA){Colors.RESET}")
-            menu_option("1", "CATRACA (Entrada/Saída Rápida)") 
-            menu_option("2", "Monitorar Pátio (Visitantes Ativos)")
-            menu_option("5", "Mapa Visual do Estacionamento")
+            # --- TODOS VEEM (Operacional) ---
+            print(f"{Colors.BOLD} 🚧 OPERAÇÃO DE PÁTIO{Colors.RESET}")
+            menu_option("1", "CATRACA (Entrada/Saída)") 
+            menu_option("2", "Monitorar Pátio (Lista de Visitantes)")
+            menu_option("3", "Mapa Visual das Vagas") # <--- AGORA ESTÁ AQUI (Acessível a todos)
             print("")
             
-            # --- BLOCO 2: GESTÃO (Apenas Admin/Gerente) ---
+            # --- RESTRITO (Admin/Gerente) ---
             if usuario.perfil in ['administrativo', 'gerencia']:
-                print(f"{Colors.BOLD} 🏢 GESTÃO ADMINISTRATIVA{Colors.RESET}")
-                menu_option("3", "Gestão de MORADORES & APARTAMENTOS") 
-                menu_option("4", "Gestão de VISITANTES FREQUENTES") 
-                menu_option("5", "Mapa Visual do Estacionamento")
+                print(f"{Colors.BOLD} 📂 GESTÃO DE CADASTROS & DADOS{Colors.RESET}")
+                menu_option("4", "Moradores & Apartamentos")
+                menu_option("5", "Visitantes Frequentes (CRUD)") 
+                menu_option("6", "Funcionários (RH)") 
                 print("")
-            
-            # --- BLOCO 3: RELATÓRIOS (Apenas Admin/Gerente) ---
-            if usuario.perfil in ['administrativo', 'gerencia']:
-                print(f"{Colors.BOLD} 📊 AUDITORIA & RELATÓRIOS{Colors.RESET}")
-                menu_option("5", "Mapa Visual do Estacionamento") 
-                menu_option("6", "Relatórios e Histórico")
+                
+                # Relatórios continuam restritos pois tem histórico sensível
+                print(f"{Colors.BOLD} 📊 AUDITORIA{Colors.RESET}")
+                menu_option("7", "Relatórios e Histórico Completo")
                 print("-" * 50)
             
-            # --- BLOCO 4: SISTEMA (Apenas Gerente) ---
+            # --- RESTRITO (Gerente Supremo) ---
             if usuario.perfil == 'gerencia':
-                print(f"{Colors.BOLD} 🔐 ADMINISTRAÇÃO DO SISTEMA{Colors.RESET}")
-                menu_option("9", "Criar Novo Usuário de Acesso")
+                print(f"{Colors.BOLD} 🔐 SISTEMA{Colors.RESET}")
+                menu_option("8", "Criar Novo Usuário de Login")
                 print("-" * 50)
 
             menu_option("0", "Sair")
 
-            # 3. Captura Input
+            # 3. Captura
             opcao = input(f"\n{Colors.CYAN}➤  Navegar para: {Colors.RESET}").strip()
 
-            # 4. Roteamento com Proteção
+            # 4. Roteamento (Lógica de Segurança)
+
             if opcao == '1':
+                # Aberto para todos
                 registrar_acesso_unificado(repo, estacionamento)
             
             elif opcao == '2':
+                # Aberto para todos
                 listar_visitantes_ativos(repo)
-            
+
             elif opcao == '3':
-                if usuario.perfil == 'portaria': show_warning("Acesso Negado!"); continue
-                executar_menu_moradores(repo)
-                
+                 # <--- AGORA ABERTO PARA TODOS (Porteiro pode ver o mapa)
+                exibir_mapa_estacionamento(repo)
+            
+            # --- BLOQUEIOS ABAIXO ---
+
             elif opcao == '4':
                 if usuario.perfil == 'portaria': show_warning("Acesso Negado!"); continue
-                executar_menu_visitantes(repo)
-                
+                executar_menu_moradores(repo)
+
             elif opcao == '5':
                 if usuario.perfil == 'portaria': show_warning("Acesso Negado!"); continue
-                exibir_mapa_estacionamento(repo)
-                
+                executar_menu_visitantes(repo) 
+
             elif opcao == '6':
+                if usuario.perfil == 'portaria': show_warning("Acesso Negado!"); continue
+                executar_menu_funcionarios(repo)
+                
+            elif opcao == '7':
                 if usuario.perfil == 'portaria': show_warning("Acesso Negado!"); continue
                 menu_relatorios(repo)
             
-            elif opcao == '9':
+            elif opcao == '8':
                 if usuario.perfil != 'gerencia': show_warning("Acesso Negado!"); continue
                 criar_novo_usuario_sistema(repo)
 
             elif opcao == '0':
                 clear_screen()
-                print(f"\n{Colors.GREEN}👋 Sistema finalizado. Até a próxima!{Colors.RESET}")
+                print(f"\n{Colors.GREEN}👋 Sistema finalizado.{Colors.RESET}")
                 break
             
             else:
-                show_warning("Opção desconhecida ou indisponível.")
+                show_warning("Opção desconhecida.")
