@@ -254,19 +254,21 @@ SELECT_HISTORICO_BY_PLACA = """
 # 9. USUÁRIOS E AUTENTICAÇÃO
 # ==============================================================================
 
-INSERT_FUNCIONARIO = """
-INSERT INTO funcionarios (nome, cpf, cargo, cnh, id_usuario) 
-VALUES (?, ?, ?, ?, ?);
+CREATE_TABLE_USUARIOS = """
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    senha_hash BYTES NOT NULL,  -- Importante: O hash é binário (bytes)
+    perfil TEXT NOT NULL        -- 'portaria', 'administrativo', 'gerencia'
+);
 """
 
-SELECT_ALL_FUNCIONARIOS = "SELECT * FROM funcionarios WHERE ativo = 1;"
+INSERT_USUARIO = "INSERT INTO usuarios (username, senha_hash, perfil) VALUES (?, ?, ?);"
 
-SELECT_FUNCIONARIO_BY_CPF = "SELECT * FROM funcionarios WHERE cpf = ?;"
+SELECT_USUARIO_BY_USERNAME = "SELECT * FROM usuarios WHERE username = ?;"
 
-UPDATE_FUNCIONARIO = """
-UPDATE funcionarios 
-SET nome=?, cargo=?, cnh=?, id_usuario=? 
-WHERE id=?;
-"""
+SELECT_ALL_USUARIOS = "SELECT id, username, perfil FROM usuarios;" 
 
-DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
+DELETE_USUARIO = "DELETE FROM usuarios WHERE id = ?;"
+
+UPDATE_SENHA_USUARIO = "UPDATE usuarios SET senha_hash = ? WHERE id = ?;"
