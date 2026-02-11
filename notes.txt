@@ -1,19 +1,65 @@
 Notas de correção: 
+- Cadastrar Funcionário com Veículo: 
+erro:
 
-Editar Funcionário:
-- Padronizar exibição, tal como os outros CRUDS:
+==================================================       
+                 NOVO COLABORADOR                        
+                  Cadastro de RH
+==================================================       
 
-1. Cadastrar Novo Morador
-2. Editar Morador / Gerenciar Veículos
-3. Excluir Morador
-4. Listar Todos
-------------------------------
-0. Voltar ao Menu Principal
+ℹ Cadastro completo: Dados Pessoais + Veículo (Opcional).
 
-Opção:
+1. Dados Pessoais
+Nome Completo: André
+CPF (apenas números): 12345678910
+Cargo: Porteiro
+(Pressione ENTER se não dirigir)
+CNH (Opcional): 12345678910
 
-- flash na tela de exibir funcionário, opção (2)
+2. Veículo Pessoal
+O funcionário utilizará vaga de estacionamento? (s/n): s
+Placa: AAA123
+❌ Formato inválido. Use AAA-1234 ou Mercosul.
+Placa: AAA123 
+❌ Formato inválido. Use AAA-1234 ou Mercosul.
+Placa: BBB1234
+❌ Placa já cadastrada no sistema.
+Placa: AAA1234
+❌ Placa já cadastrada no sistema.
+Placa: FFF1234
+❌ Placa já cadastrada no sistema.
+Placa: WWW1234
+❌ Placa já cadastrada no sistema.
+Placa: PPP1234
+Marca/Modelo: VW Gol
+Cor: Preto
+
+Salvando registros...
+Erro ao adicionar funcionário: table funcionarios has no column named cnh
+
+❌ ERRO: Erro ao salvar: Erro ao gerar ID do funcionário.
+Pressione Enter para tentar novamente...
+
+*O mesmo acontece quando não veiculamos o veículo, não consegui achar o erro
+*Dois inputs iguais: 
+Pressione Enter para tentar novamente
+
+* A verificação de placa está funcionando, a do cpf ainda não dá para ser testada. 
+
+ver!
+
+
+- flash na tela de exibir funcionário, opção (4) 
 - Escolher o campo que quer editar
-- Já ativar as verificações de unicidade de CPF e CNH 
-- Vincular veículo a Funcionário - habilitando catraca (2 carros por funcionário, max??)
+- Habilitaremos 2 carros por funcionário??
+- Criar a zona C. 10 vagas rotativas para os funcionários, 
 
+
+- Verificação GERAL CPF: 
+Teremos essa função para rodar especificamente em cada coluna cpf de cada entidade ou uma função que dê o join na coluna cpf de todos verificando a unicidade do número? Ou ambas rodando no background? 
+
+    def buscar_por_cpf(self, cpf: str) -> Funcionario:
+        """Busca funcionário pelo CPF exato."""
+        cursor = self._get_cursor()
+        cursor.execute(queries.SELECT_FUNCIONARIO_BY_CPF, (cpf,))
+        row = cursor.fetchone()
