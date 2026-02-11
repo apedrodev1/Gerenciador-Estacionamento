@@ -1,0 +1,19 @@
+Notas de correção: 
+
+Editar Funcionário:
+- Padronizar exibição, tal como os outros CRUDS:
+
+1. Cadastrar Novo Morador
+2. Editar Morador / Gerenciar Veículos
+3. Excluir Morador
+4. Listar Todos
+------------------------------
+0. Voltar ao Menu Principal
+
+Opção:
+
+- flash na tela de exibir funcionário, opção (2)
+- Escolher o campo que quer editar
+- Já ativar as verificações de unicidade de CPF e CNH 
+- Vincular veículo a Funcionário - habilitando catraca (2 carros por funcionário, max??)
+

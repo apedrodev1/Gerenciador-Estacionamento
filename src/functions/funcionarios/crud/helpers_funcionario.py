@@ -46,8 +46,8 @@ def selecionar_funcionario(repositorio, apenas_listar=False):
         if func and func.ativo: return func, None
         return None, "Funcionário não encontrado ou inativo."
 
-    console.print("\n[dim](Digite 0 para cancelar)[/]")
-    selecionado, _ = get_valid_input("Digite o ID do Funcionário", validador_id)
+    console.print("\n[dim](Digite 0 para cancelar)[/]\n")
+    selecionado, _ = get_valid_input("Digite o ID do Funcionário: ", validador_id)
     
     if selecionado == 0: return None
     return selecionado
