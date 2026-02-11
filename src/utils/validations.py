@@ -90,33 +90,38 @@ def validate_cpf(cpf: str) -> tuple[str, str]:
     if len(cpf_limpo) != 11:
         return None, "CPF deve conter 11 dígitos."
     
+
+    # --- MODO DE DESENVOLVIMENTO (Return direto) ---
+
     if cpf_limpo == cpf_limpo[0] * 11:
         return None, "CPF inválido (todos os números iguais)."
 
+    return cpf_limpo, None
+
     # 3. Cálculo dos Dígitos Verificadores
-    try:
-        # Primeiro Dígito
-        soma = 0
-        for i in range(9):
-            soma += int(cpf_limpo[i]) * (10 - i)
-        resto = (soma * 10) % 11
-        if resto == 10: resto = 0
-        if resto != int(cpf_limpo[9]):
-            return None, "CPF inválido (Dígito verificador 1)."
+    # try:
+    #     # Primeiro Dígito
+    #     soma = 0
+    #     for i in range(9):
+    #         soma += int(cpf_limpo[i]) * (10 - i)
+    #     resto = (soma * 10) % 11
+    #     if resto == 10: resto = 0
+    #     if resto != int(cpf_limpo[9]):
+    #         return None, "CPF inválido (Dígito verificador 1)."
 
-        # Segundo Dígito
-        soma = 0
-        for i in range(10):
-            soma += int(cpf_limpo[i]) * (11 - i)
-        resto = (soma * 10) % 11
-        if resto == 10: resto = 0
-        if resto != int(cpf_limpo[10]):
-            return None, "CPF inválido (Dígito verificador 2)."
+    #     # Segundo Dígito
+    #     soma = 0
+    #     for i in range(10):
+    #         soma += int(cpf_limpo[i]) * (11 - i)
+    #     resto = (soma * 10) % 11
+    #     if resto == 10: resto = 0
+    #     if resto != int(cpf_limpo[10]):
+    #         return None, "CPF inválido (Dígito verificador 2)."
             
-        return cpf_limpo, None
+    #     return cpf_limpo, None
 
-    except Exception:
-        return None, "Erro ao validar CPF."
+    # except Exception:
+    #     return None, "Erro ao validar CPF."
 
 def validate_cnh(cnh_input):
     """Valida se contém exatamente 11 dígitos numéricos."""
