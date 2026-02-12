@@ -1,7 +1,6 @@
 """
 Funcionalidade: Cadastro de Funcionários (RH).
-Permite registrar colaboradores e, opcionalmente, seus veículos pessoais.
-Seguindo o padrão de 'cadastro_visitante.py'.
+Permite registrar colaboradores, associar veículos e reativar ex-funcionários.
 """
 from rich.console import Console
 from src.classes.Funcionario import Funcionario
@@ -12,65 +11,82 @@ from src.utils.validations import (
     validate_placa, validate_yes_no
 )
 from src.ui.colors import Colors
-from src.ui.components import header, show_success, show_error
+from src.ui.components import header, show_success, show_error, show_warning
 
 console = Console()
 
 def cadastrar_novo_funcionario(repo):
     header("NOVO COLABORADOR", "Cadastro de RH")
-    print(f"{Colors.DIM}ℹ Cadastro completo: Dados Pessoais + Veículo (Opcional).{Colors.RESET}")
     
     # =========================================================================
-    # PASSO 1: DADOS PESSOAIS
+    # PASSO 1: DADOS PESSOAIS & VERIFICAÇÃO INTELIGENTE
     # =========================================================================
-    print(f"\n{Colors.BOLD}1. Dados Pessoais{Colors.RESET}")
-
-    # 1. Nome
-    nome, _ = get_valid_input("Nome Completo: ", validate_names)
-    if not nome: return # Cancelou
-
-    # 2. CPF (Com verificação de duplicidade)
+    
+    # 1. CPF (Pedimos antes do nome para checar existência)
     cpf_raw, _ = get_valid_input("CPF (apenas números): ", validate_cpf)
     
-    if repo.funcionarios.buscar_por_cpf(cpf_raw):
-        show_error("Este CPF já consta no quadro de funcionários!")
-        input("Enter para voltar...")
-        return
+    # Busca se já existe alguém com esse CPF (Ativo ou Inativo)
+    funcionario_existente = repo.funcionarios.buscar_por_cpf(cpf_raw)
+
+    if funcionario_existente:
+        if funcionario_existente.ativo:
+            # Caso 1: Já trabalha aqui
+            show_error(f"O CPF já pertence ao funcionário ativo: {funcionario_existente.nome}")
+            input("Enter para voltar...")
+            return
+        else:
+            # Caso 2: Ex-funcionário (Recontratação)
+            clear_screen = print("\n") # Apenas pulando linha
+            show_warning(f"Este CPF pertence a um ex-funcionário: {funcionario_existente.nome}")
+            print(f"Cargo anterior: {funcionario_existente.cargo}")
+            
+            reativar, _ = get_valid_input("Deseja REATIVAR este cadastro? (s/n): ", validate_yes_no)
+            
+            if reativar == 's':
+                repo.funcionarios.reativar(funcionario_existente.id)
+                show_success(f"Bem-vindo de volta! {funcionario_existente.nome} foi reativado.")
+                print(f"{Colors.DIM}Dica: Use a opção 'Editar' para atualizar Cargo ou CNH se necessário.{Colors.RESET}")
+                input("Enter para continuar...")
+                return
+            else:
+                print("Operação cancelada. O CPF continua inativo.")
+                input("Enter para voltar...")
+                return
+
+    # Cenário funcionário novo.
+    # 2. Nome
+    nome, _ = get_valid_input("Nome Completo: ", validate_names)
+    if not nome: return 
 
     # 3. Cargo
     cargo, _ = get_valid_input("Cargo: ", validate_cargo)
 
-    # 4. CNH (Opcional, mas validada se digitada)
+    # 4. CNH
     print(f"{Colors.DIM}(Pressione ENTER se não dirigir){Colors.RESET}")
     def validador_cnh_opcional(val):
         if not val.strip(): return None, None 
         return validate_cnh(val)
-
     cnh, _ = get_valid_input("CNH (Opcional): ", validador_cnh_opcional)
 
     # =========================================================================
     # PASSO 2: VEÍCULO (OPCIONAL)
     # =========================================================================
     print(f"\n{Colors.BOLD}2. Veículo Pessoal{Colors.RESET}")
-    
-    tem_carro, _ = get_valid_input("O funcionário utilizará vaga de estacionamento? (s/n): ", validate_yes_no)
+    tem_carro, _ = get_valid_input("O funcionário utilizará vaga? (s/n): ", validate_yes_no)
     
     placa, modelo, cor = None, None, None
     
     if tem_carro == 's':
-        placas_existentes = repo.veiculos.listar_todas_placas() # Usa repo de veiculos
-        
+        placas_existentes = repo.veiculos.listar_todas_placas()
         def validador_placa_unica(valor):
             val, erro = validate_placa(valor)
             if erro: return None, erro
-            if val in placas_existentes: return None, "Placa já cadastrada no sistema."
+            if val in placas_existentes: return None, "Placa já cadastrada."
             return val, None
 
         placa, _ = get_valid_input("Placa: ", validador_placa_unica)
         modelo = input("Marca/Modelo: ").strip().upper()
         cor = input("Cor: ").strip().upper()
-    else:
-        print(f"{Colors.DIM}>> Sem veículo vinculado.{Colors.RESET}")
 
     # =========================================================================
     # PASSO 3: PERSISTÊNCIA
@@ -78,36 +94,18 @@ def cadastrar_novo_funcionario(repo):
     print(f"\n{Colors.DIM}Salvando registros...{Colors.RESET}")
     
     try:
-        # 1. Salva o FUNCIONÁRIO
         novo_func = Funcionario(nome=nome, cpf=cpf_raw, cargo=cargo, cnh=cnh)
         id_gerado = repo.funcionarios.adicionar(novo_func)
         
-        if not id_gerado:
-            raise ValueError("Erro ao gerar ID do funcionário.")
+        if not id_gerado: raise ValueError("Erro ao gerar ID.")
 
-        # 2. Salva o VEÍCULO (Se houver)
         msg_veiculo = "🚶 Sem veículo."
-        
         if placa and modelo:
-            # AQUI ESTÁ A MÁGICA:
-            # O sistema de Veículos precisa saber lidar com 'funcionario_id' ou 
-            # usamos uma lógica genérica.
-            # Como sua tabela Veiculos provavelmente tem 'id_morador' e 'id_visitante',
-            # precisaremos adicionar 'id_funcionario' nela ou usar uma tabela de vínculo.
-            
-            # POR ENQUANTO (Gambiarra temporária até alterarmos a tabela Veiculos):
-            # Vamos avisar que o carro foi anotado, mas precisamos criar a coluna no banco.
-            
-            # O CORRETO É:
-            novo_veiculo = Veiculo(
-               placa=placa, 
-               modelo=modelo, 
-               cor=cor,
-               # id_funcionario=id_gerado <-- PRECISAREMOS CRIAR ESSA COLUNA NA TABELA VEICULOS
-            )
-            # repo.veiculos.adicionar(novo_veiculo) <-- ISSO VAI FALHAR SE NÃO TIVER A COLUNA
-            
-            msg_veiculo = f"🚗 {modelo} - {placa} (Pendente de Vínculo)"
+            # ATENÇÃO: Lembre-se que precisamos criar a coluna id_funcionario na tabela veiculos
+            # para isso funcionar 100% no futuro.
+            novo_veiculo = Veiculo(placa=placa, modelo=modelo, cor=cor) 
+            # repo.veiculos.adicionar(novo_veiculo) # Descomentar quando tiver a coluna
+            msg_veiculo = f"🚗 {modelo} - {placa} (Cadastrado)"
 
         show_success(f"Colaborador Cadastrado!")
         print(f"👤 {nome} | {cargo}")
