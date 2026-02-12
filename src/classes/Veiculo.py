@@ -6,7 +6,7 @@ Vínculo: Possui campos explícitos para ligar a diferentes tipos de proprietár
 from src.utils.validations import validate_placa
 
 class Veiculo:
-    def __init__(self, id=None, placa="", modelo="", cor="", morador_id=None, visitante_id=None, estacionado=False):
+    def __init__(self, id=None, placa="", modelo="", cor="", morador_id=None, visitante_id=None, funcionario_id=None, estacionado=False):
         self._id = id
         
         # --- Atributos Físicos ---
@@ -18,6 +18,7 @@ class Veiculo:
         # Permite integridade referencial no banco e expansão futura (ex: funcionario_id)
         self.morador_id = morador_id
         self.visitante_id = visitante_id
+        self.funcionario_id = funcionario_id
         
         # --- Estado ---
         self.estacionado = estacionado

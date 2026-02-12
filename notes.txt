@@ -1,58 +1,16 @@
 Notas de correção: 
-- Cadastrar Funcionário com Veículo: 
-erro:
 
-==================================================       
-                 NOVO COLABORADOR                        
-                  Cadastro de RH
-==================================================       
+- Edição do funcionário: 
+Padronizar tal como o arquivo edição_morador e edição_visitante.py, mesma ui, mesma lógica 
 
-ℹ Cadastro completo: Dados Pessoais + Veículo (Opcional).
-
-1. Dados Pessoais
-Nome Completo: André
-CPF (apenas números): 12345678910
-Cargo: Porteiro
-(Pressione ENTER se não dirigir)
-CNH (Opcional): 12345678910
-
-2. Veículo Pessoal
-O funcionário utilizará vaga de estacionamento? (s/n): s
-Placa: AAA123
-❌ Formato inválido. Use AAA-1234 ou Mercosul.
-Placa: AAA123 
-❌ Formato inválido. Use AAA-1234 ou Mercosul.
-Placa: BBB1234
-❌ Placa já cadastrada no sistema.
-Placa: AAA1234
-❌ Placa já cadastrada no sistema.
-Placa: FFF1234
-❌ Placa já cadastrada no sistema.
-Placa: WWW1234
-❌ Placa já cadastrada no sistema.
-Placa: PPP1234
-Marca/Modelo: VW Gol
-Cor: Preto
-
-Salvando registros...
-Erro ao adicionar funcionário: table funcionarios has no column named cnh
-
-❌ ERRO: Erro ao salvar: Erro ao gerar ID do funcionário.
-Pressione Enter para tentar novamente...
-
-*O mesmo acontece quando não veiculamos o veículo, não consegui achar o erro
-*Dois inputs iguais: 
-Pressione Enter para tentar novamente
-
-* A verificação de placa está funcionando, a do cpf ainda não dá para ser testada. 
-
-ver!
-
-
+Listar Funcionários, helpers_funcionarios.py
 - flash na tela de exibir funcionário, opção (4) 
 - Escolher o campo que quer editar
-- Habilitaremos 2 carros por funcionário??
 - Criar a zona C. 10 vagas rotativas para os funcionários, 
+
+
+- Exclusão do funcionário: 
+Quando o mesmo é excluido (inativo), e tentamos inserir novamente no sistema, ele trava "O CPF já está cadastrado no sistema", porém não criamos nenhuma manipulação da tabela Funcionários inativos, Vejo duas opções criar toda essa manipulação, dando a opção de reativarmos aquele funcionário, ou facilitamos e excluimos para sempre, aqui estamos lidando com lixo de dados, certo???  
 
 
 - Verificação GERAL CPF: 
