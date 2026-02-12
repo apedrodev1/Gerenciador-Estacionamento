@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS veiculos (
     visitante_id INTEGER,
     FOREIGN KEY(morador_id) REFERENCES moradores(id) ON DELETE CASCADE,
     FOREIGN KEY(visitante_id) REFERENCES visitantes_cadastrados(id) ON DELETE CASCADE
+    FOREIGN KEY(funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 """
 
