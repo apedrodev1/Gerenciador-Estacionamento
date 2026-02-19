@@ -7,7 +7,7 @@ from src.classes.Funcionario import Funcionario
 from src.classes.Veiculo import Veiculo
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import (
-    validate_names, validate_cpf, validate_cnh, validate_cargo, 
+    validate_names, validate_cpf, validate_cnh_unica, validate_cargo, 
     validate_placa, validate_yes_no
 )
 from src.ui.colors import Colors
@@ -45,7 +45,7 @@ def cadastrar_novo_funcionario(repo):
             if reativar == 's':
                 repo.funcionarios.reativar(funcionario_existente.id)
                 show_success(f"Bem-vindo de volta! {funcionario_existente.nome} foi reativado.")
-                print(f"{Colors.DIM}Dica: Use a opção 'Editar' para atualizar Cargo ou CNH se necessário.{Colors.RESET}")
+                print(f"{Colors.DIM}Dica: Use a opção 'Editar' para atualizar Cargo ou Veículo se necessário.{Colors.RESET}")
                 input("Enter para continuar...")
                 return
             else:
@@ -61,11 +61,19 @@ def cadastrar_novo_funcionario(repo):
     # 3. Cargo
     cargo, _ = get_valid_input("Cargo: ", validate_cargo)
 
-    # 4. CNH
+    # 4. CNH (Opcional + Verificação de Duplicidade)
     print(f"{Colors.DIM}(Pressione ENTER se não dirigir){Colors.RESET}")
+    
+    # Busca a lista no banco uma vez só
+    cnhs_existentes = [f.cnh for f in repo.funcionarios.listar() if f.cnh]
+    
     def validador_cnh_opcional(val):
-        if not val.strip(): return None, None 
-        return validate_cnh(val)
+        if not val.strip(): 
+            return None, None # Regra 1: Se vazio, passa direto
+        
+        # Regra 2: Se tem texto, joga pra a função validate_cnh_unica()resolver
+        return validate_cnh_unica(val, cnhs_existentes)
+
     cnh, _ = get_valid_input("CNH (Opcional): ", validador_cnh_opcional)
 
     # =========================================================================
@@ -103,8 +111,14 @@ def cadastrar_novo_funcionario(repo):
         if placa and modelo:
             # ATENÇÃO: Lembre-se que precisamos criar a coluna id_funcionario na tabela veiculos
             # para isso funcionar 100% no futuro.
-            novo_veiculo = Veiculo(placa=placa, modelo=modelo, cor=cor) 
-            # repo.veiculos.adicionar(novo_veiculo) # Descomentar quando tiver a coluna
+            novo_veiculo = Veiculo(
+                placa=placa,
+                modelo=modelo,
+                cor=cor,
+                funcionario_id=id_gerado) 
+            
+            repo.veiculos.adicionar(novo_veiculo)
+
             msg_veiculo = f"🚗 {modelo} - {placa} (Cadastrado)"
 
         show_success(f"Colaborador Cadastrado!")
