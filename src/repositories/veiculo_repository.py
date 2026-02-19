@@ -20,8 +20,9 @@ class VeiculoRepository(BaseRepository):
             veiculo.placa,
             veiculo.modelo,
             veiculo.cor,
-            veiculo.morador_id,   # Pode ser int ou None
-            veiculo.visitante_id, # Pode ser int ou None
+            veiculo.morador_id, 
+            veiculo.visitante_id, 
+            veiculo.funcionario_id,
             int(veiculo.estacionado)
         ))
 
@@ -79,19 +80,17 @@ class VeiculoRepository(BaseRepository):
         return lista
 
 
-    def listar_por_funcionario(self, id_funcionario: int) -> list[Veiculo]:
+    def listar_por_funcionario(self, funcionario_id: int) -> list[Veiculo]:
         cursor = self._get_cursor()
-        query = "SELECT * FROM veiculos WHERE id_funcionario = ?"
-        cursor.execute(query, (id_funcionario,))
+        query = "SELECT * FROM veiculos WHERE funcionario_id = ?"
+        cursor.execute(query, (funcionario_id,))
         rows = cursor.fetchall()
         # Converte as tuplas em objetos Veiculo
-        # Lembre-se que o construtor do Veiculo precisa aceitar id_funcionario agora
-        # ou usamos o _montar_objeto se ele estiver atualizado.
         lista = []
         for row in rows:
             # Adapte conforme seu _montar_objeto ou construtor
-            # Supondo row: placa, modelo, cor, id_morador, id_visitante, id_funcionario, estac...
-            v = Veiculo(placa=row[0], modelo=row[1], cor=row[2], id_funcionario=row[5])
+            # Supondo row: placa, modelo, cor, id_morador, id_visitante, funcionario_id, estac...
+            v = Veiculo(placa=row[0], modelo=row[1], cor=row[2], funcionario_id=row[5])
             lista.append(v)
         return lista
     
