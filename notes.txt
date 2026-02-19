@@ -1,17 +1,26 @@
 Notas de correção: 
 
-- Edição do funcionário: 
-Padronizar tal como o arquivo edição_morador e edição_visitante.py, mesma ui, mesma lógica 
+- Cadastro:
+- validação cnh não funciona, placa e cpf funcionam - VER
+- Não veicula veículo a funcionário
 
-Listar Funcionários, helpers_funcionarios.py
-- flash na tela de exibir funcionário, opção (4) 
-- Escolher o campo que quer editar
-- Criar a zona C. 10 vagas rotativas para os funcionários, 
+Erro Ao criar o funcionário que possui carro: 
+
+❌ ERRO: Erro: 'int' object has no attribute 'replace'
+Pressione Enter para tentar novamente...
+
+Erro ao vincular veículo, depois de funcionário criado: 
+
+==================================================   
+            VEÍCULO DE GUSTAVO AUGUSTO               
+==================================================   
 
 
-- Exclusão do funcionário: 
-Quando o mesmo é excluido (inativo), e tentamos inserir novamente no sistema, ele trava "O CPF já está cadastrado no sistema", porém não criamos nenhuma manipulação da tabela Funcionários inativos, Vejo duas opções criar toda essa manipulação, dando a opção de reativarmos aquele funcionário, ou facilitamos e excluimos para sempre, aqui estamos lidando com lixo de dados, certo???  
+❌ ERRO: Erro: 'int' object has no attribute 'replace'
+Pressione Enter para tentar novamente...
 
+
+* A placa é cadastrada no sistema e cai na verificação de placas, portanto em algum lugar ela esta sendo salva, só não estamos conseguindo buscar ela no bd
 
 - Verificação GERAL CPF: 
 Teremos essa função para rodar especificamente em cada coluna cpf de cada entidade ou uma função que dê o join na coluna cpf de todos verificando a unicidade do número? Ou ambas rodando no background? 
