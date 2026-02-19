@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS veiculos (
     estacionado INTEGER DEFAULT 0, -- 0=Fora, 1=Dentro
     morador_id INTEGER,
     visitante_id INTEGER,
+    funcionario_id INTEGER,
     FOREIGN KEY(morador_id) REFERENCES moradores(id) ON DELETE CASCADE,
     FOREIGN KEY(visitante_id) REFERENCES visitantes_cadastrados(id) ON DELETE CASCADE
     FOREIGN KEY(funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
@@ -173,8 +174,8 @@ DELETE_VISITANTE = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 # 5. VEÍCULOS (CRUD + OPERAÇÃO)
 # ==============================================================================
 INSERT_VEICULO = """
-INSERT INTO veiculos (placa, modelo, cor, morador_id, visitante_id, estacionado)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO veiculos (placa, modelo, cor, morador_id, visitante_id, funcionario_id, estacionado)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 # Conta quantos veículos estão vinculados a moradores de um apto específico
 SELECT_COUNT_VEICULOS_BY_APTO_ID = """
