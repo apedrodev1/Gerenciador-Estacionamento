@@ -8,11 +8,11 @@ class Funcionario:
         """
         self.id = id
         self.nome = nome
-        self.cpf = cpf      # Validação obrigatória
+        self.cpf = cpf      
         self.cargo = cargo
-        self.cnh = cnh      # Validação opcional (pode ser None)
+        self.cnh = cnh       
         self.ativo = ativo
-        self.id_usuario = id_usuario
+        self.id_usuario = id_usuario 
 
     # --- Getter e Setter do CPF (Obrigatório) ---
     @property
@@ -33,7 +33,6 @@ class Funcionario:
 
     @cnh.setter
     def cnh(self, valor):
-        # Se for None ou string vazia "", salvamos como None e pulamos validação
         if not valor:
             self._cnh = None
             return
@@ -45,7 +44,6 @@ class Funcionario:
 
     def __str__(self):
         status = "✅" if self.ativo else "❌"
-        # Formatação visual
         cpf_fmt = f"{self._cpf[:3]}.{self._cpf[3:6]}.{self._cpf[6:9]}-{self._cpf[9:]}"
         cnh_fmt = f"CNH: {self._cnh}" if self._cnh else "CNH: N/A"
         
@@ -59,5 +57,5 @@ class Funcionario:
             "cargo": self.cargo,
             "cnh": self._cnh,
             "ativo": self.ativo,
-            "id_usuario": self.id_usuario
+            "id_usuario": self.id_usuario # <--- CORRIGIDO AQUI
         }
