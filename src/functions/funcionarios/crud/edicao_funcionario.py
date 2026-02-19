@@ -102,6 +102,6 @@ def gerenciar_veiculo_funcionario(repo, func):
             modelo = input("Modelo: ").strip().upper()
             cor = input("Cor: ").strip().upper()
             
-            novo_carro = Veiculo(placa=placa, modelo=modelo, cor=cor, id_funcionario=func.id)
+            novo_carro = Veiculo(placa=placa, modelo=modelo, cor=cor, funcionario_id=func.id)
             repo.veiculos.adicionar(novo_carro)
             show_success("Veículo adicionado com sucesso!")
