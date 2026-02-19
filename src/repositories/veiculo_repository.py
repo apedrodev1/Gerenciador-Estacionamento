@@ -78,6 +78,23 @@ class VeiculoRepository(BaseRepository):
             lista.append(v)
         return lista
 
+
+    def listar_por_funcionario(self, id_funcionario: int) -> list[Veiculo]:
+        cursor = self._get_cursor()
+        query = "SELECT * FROM veiculos WHERE id_funcionario = ?"
+        cursor.execute(query, (id_funcionario,))
+        rows = cursor.fetchall()
+        # Converte as tuplas em objetos Veiculo
+        # Lembre-se que o construtor do Veiculo precisa aceitar id_funcionario agora
+        # ou usamos o _montar_objeto se ele estiver atualizado.
+        lista = []
+        for row in rows:
+            # Adapte conforme seu _montar_objeto ou construtor
+            # Supondo row: placa, modelo, cor, id_morador, id_visitante, id_funcionario, estac...
+            v = Veiculo(placa=row[0], modelo=row[1], cor=row[2], id_funcionario=row[5])
+            lista.append(v)
+        return lista
+    
     def listar_todas_placas(self):
         """Retorna lista de placas (strings) para validação de unicidade."""
         cursor = self._get_cursor()

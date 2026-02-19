@@ -84,6 +84,15 @@ class FuncionarioRepository(BaseRepository):
         cursor = self._get_cursor()
         cursor.execute(queries.DELETE_FUNCIONARIO_LOGICO, (id_func,))
 
+    def reativar(self, id_func: int):
+        """Reativa um funcionário que estava demitido/inativo."""
+        cursor = self._get_cursor()
+        query = "UPDATE funcionarios SET ativo = 1 WHERE id = ?;"
+        cursor.execute(query, (id_func,))
+        # O commit é feito pelo __exit__ do gerenciador, mas se quiser garantir:
+        # self.conn.commit()
+   
+
     def _montar_objeto(self, row) -> Funcionario:
         """Helper para converter tupla do banco em Objeto."""
         # Colunas: id, nome, cpf, cargo, cnh, ativo, id_usuario
