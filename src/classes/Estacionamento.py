@@ -6,7 +6,7 @@ Não acessa banco de dados.
 from datetime import datetime
 
 class Estacionamento:
-    def __init__(self, nome, capacidade_visitantes, capacidade_moradores, tempo_limite_minutos):
+    def __init__(self, nome, capacidade_visitantes, capacidade_moradores, tempo_limite_minutos, capacidade_funcionarios=10):
         self.nome = nome
         
         # --- ZONAS E CAPACIDADES ---
@@ -16,15 +16,19 @@ class Estacionamento:
         
         # Zona B (Moradores): Vagas garantidas
         self.capacidade_moradores = int(capacidade_moradores)
+
+        # Zona C (Funcionários): Vagas limitadas para o RH
+        self.capacidade_funcionarios = int(capacidade_funcionarios)
         
         # Capacidade Total (Soma das Zonas)
-        self.capacidade_total = self.capacidade_visitantes + self.capacidade_moradores
+        self.capacidade_total = self.capacidade_visitantes + self.capacidade_moradores + self.capacidade_funcionarios
         
         # Regras de Tempo
         self.tempo_limite_visitante_minutos = int(tempo_limite_minutos)
         
         # Cache de estado
         self._ocupacao_visitantes = 0
+        self._ocupacao_funcionarios = 0
 
     # --- PROPRIEDADES (Visitantes) ---
 
@@ -37,6 +41,18 @@ class Estacionamento:
     def visitante_esta_lotado(self):
         """Booleano para travar catraca de visitante."""
         return self.vagas_visitantes_disponiveis <= 0
+
+    # --- PROPRIEDADES (Funcionários - Zona C) ---
+
+    @property
+    def vagas_funcionarios_disponiveis(self):
+        """Calcula vagas restantes na Zona C."""
+        return self.capacidade_funcionarios - self._ocupacao_funcionarios
+
+    @property
+    def funcionario_esta_lotado(self):
+        """Booleano para travar catraca de funcionário."""
+        return self.vagas_funcionarios_disponiveis <= 0
 
     # --- MÉTODOS DE REGRA DE NEGÓCIO ---
 
