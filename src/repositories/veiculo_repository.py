@@ -44,7 +44,8 @@ class VeiculoRepository(BaseRepository):
                 cor=row[3],
                 estacionado=bool(row[4]),
                 morador_id=row[5],
-                visitante_id=row[6]
+                visitante_id=row[6],
+                funcionario_id=row[7]
             )
         return None
 
@@ -55,8 +56,14 @@ class VeiculoRepository(BaseRepository):
         lista = []
         for row in cursor.fetchall():
             v = Veiculo(
-                id=row[0], placa=row[1], modelo=row[2], cor=row[3],
-                estacionado=bool(row[4]), morador_id=row[5], visitante_id=row[6]
+                id=row[0],
+                placa=row[1],
+                modelo=row[2],
+                cor=row[3],
+                estacionado=bool(row[4]),
+                morador_id=row[5], 
+                visitante_id=row[6],
+                funcionario_id=row[7]
             )
             lista.append(v)
         return lista
@@ -74,23 +81,31 @@ class VeiculoRepository(BaseRepository):
                 cor=row[3],
                 estacionado=bool(row[4]), 
                 morador_id=row[5], 
-                visitante_id=row[6]
+                visitante_id=row[6],
+                funcionario_id=row[7]
             )
             lista.append(v)
         return lista
-
 
     def listar_por_funcionario(self, funcionario_id: int) -> list[Veiculo]:
         cursor = self._get_cursor()
         query = "SELECT * FROM veiculos WHERE funcionario_id = ?"
         cursor.execute(query, (funcionario_id,))
         rows = cursor.fetchall()
-        # Converte as tuplas em objetos Veiculo
+        
         lista = []
         for row in rows:
-            # Adapte conforme seu _montar_objeto ou construtor
-            # Supondo row: placa, modelo, cor, id_morador, id_visitante, funcionario_id, estac...
-            v = Veiculo(placa=row[0], modelo=row[1], cor=row[2], funcionario_id=row[5])
+            # Mapeamento IDÊNTICO aos demais, mantendo o seu padrão!
+            v = Veiculo(
+                id=row[0], 
+                placa=row[1], 
+                modelo=row[2], 
+                cor=row[3],
+                estacionado=bool(row[4]), 
+                morador_id=row[5], 
+                visitante_id=row[6],
+                funcionario_id=row[7]
+            )
             lista.append(v)
         return lista
     
@@ -108,6 +123,7 @@ class VeiculoRepository(BaseRepository):
             veiculo.cor,
             veiculo.morador_id,
             veiculo.visitante_id,
+            veiculo.funcionario_id, # <--- COLUNA ADICIONADA AQUI
             veiculo.placa # WHERE placa = ?
         ))
 
@@ -163,7 +179,7 @@ class VeiculoRepository(BaseRepository):
             cursor.execute(queries.INSERT_HISTORICO, (
                 agora, 
                 placa, 
-                tipo_veiculo, # Ex: "MORADOR", "VISITANTE"
+                tipo_veiculo, # Ex: "MORADOR", "VISITANTE", "FUNCIONARIO"
                 evento        # "ENTRADA" ou "SAIDA"
             ))
         except Exception as e:
