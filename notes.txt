@@ -1,32 +1,3 @@
 Notas de correção: 
 
-- Cadastro:
-- validação cnh não funciona, placa e cpf funcionam - VER
-- Não veicula veículo a funcionário
-
-Erro Ao criar o funcionário que possui carro: 
-
-❌ ERRO: Erro: 'int' object has no attribute 'replace'
-Pressione Enter para tentar novamente...
-
-Erro ao vincular veículo, depois de funcionário criado: 
-
-==================================================   
-            VEÍCULO DE GUSTAVO AUGUSTO               
-==================================================   
-
-
-❌ ERRO: Erro: 'int' object has no attribute 'replace'
-Pressione Enter para tentar novamente...
-
-
-* A placa é cadastrada no sistema e cai na verificação de placas, portanto em algum lugar ela esta sendo salva, só não estamos conseguindo buscar ela no bd
-
-- Verificação GERAL CPF: 
-Teremos essa função para rodar especificamente em cada coluna cpf de cada entidade ou uma função que dê o join na coluna cpf de todos verificando a unicidade do número? Ou ambas rodando no background? 
-
-    def buscar_por_cpf(self, cpf: str) -> Funcionario:
-        """Busca funcionário pelo CPF exato."""
-        cursor = self._get_cursor()
-        cursor.execute(queries.SELECT_FUNCIONARIO_BY_CPF, (cpf,))
-        row = cursor.fetchone()
+ui.mapa.py >> controle_acesso > proximos passos
