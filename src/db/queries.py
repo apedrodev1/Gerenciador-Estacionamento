@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS veiculos (
     visitante_id INTEGER,
     funcionario_id INTEGER,
     FOREIGN KEY(morador_id) REFERENCES moradores(id) ON DELETE CASCADE,
-    FOREIGN KEY(visitante_id) REFERENCES visitantes_cadastrados(id) ON DELETE CASCADE
+    FOREIGN KEY(visitante_id) REFERENCES visitantes_cadastrados(id) ON DELETE CASCADE,
     FOREIGN KEY(funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 """
@@ -189,7 +189,9 @@ SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
 SELECT_VEICULOS_BY_VISITANTE_ID = "SELECT * FROM veiculos WHERE visitante_id = ?;"
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
-UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=? WHERE placa=?;"
+# UPDATE ATUALIZADO (Incluindo funcionario_id)
+UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=?, funcionario_id=? WHERE placa=?;"
+
 DELETE_VEICULO = "DELETE FROM veiculos WHERE placa=?;"
 
 # Catraca
@@ -230,7 +232,6 @@ WHERE v.estacionado = 1
 UNION ALL
 
 -- 2. Visitantes (Tickets Ativos)
--- Agora fazemos JOIN com 'veiculos' para tentar achar a cor/modelo se existir cadastro
 SELECT 
     'VISITANTE' as tipo,            -- Coluna 0
     NULL as apto_num,               -- Coluna 1 (Vazio para visitante)
@@ -238,11 +239,27 @@ SELECT
     t.numero_vaga as vaga_visitante,-- Coluna 3
     COALESCE(vc.nome, 'ROTATIVO') as proprietario, -- Coluna 4
     t.placa,                        -- Coluna 5
-    COALESCE(v.modelo, '---') as modelo, -- Coluna 6 (Busca no carro, se não, ---)
-    COALESCE(v.cor, '---') as cor        -- Coluna 7 (Busca no carro, se não, ---)
+    COALESCE(v.modelo, '---') as modelo, -- Coluna 6
+    COALESCE(v.cor, '---') as cor        -- Coluna 7
 FROM tickets_visitantes t
 LEFT JOIN visitantes_cadastrados vc ON t.id_visitante = vc.id
-LEFT JOIN veiculos v ON t.placa = v.placa -- JOIN NOVO: Busca dados do carro pela placa
+LEFT JOIN veiculos v ON t.placa = v.placa
+
+UNION ALL
+
+-- 3. Funcionários (Estacionados - ZONA C)
+SELECT 
+    'FUNCIONARIO' as tipo,          -- Coluna 0
+    NULL as apto_num,               -- Coluna 1
+    NULL as apto_bloco,             -- Coluna 2
+    NULL as vaga_visitante,         -- Coluna 3
+    f.nome as proprietario,         -- Coluna 4
+    v.placa,                        -- Coluna 5
+    v.modelo,                       -- Coluna 6
+    v.cor                           -- Coluna 7
+FROM veiculos v
+JOIN funcionarios f ON v.funcionario_id = f.id
+WHERE v.estacionado = 1
 ;
 """
 
