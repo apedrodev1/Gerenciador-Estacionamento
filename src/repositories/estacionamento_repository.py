@@ -55,7 +55,6 @@ class EstacionamentoRepository:
         self.db_manager.__exit__(exc_type, exc_val, exc_tb)
         self.conn = None
         
-        # Remove a referência da conexão
         self.common.set_connection(None)
         self.apartamentos.set_connection(None)
         self.moradores.set_connection(None)
@@ -98,6 +97,8 @@ class EstacionamentoRepository:
     # --- 4. RH (FUNCIONÁRIOS) ---
     def adicionar_funcionario(self, f): return self.funcionarios.adicionar(f)
     def listar_funcionarios(self): return self.funcionarios.listar()
+    #def buscar_funcionario_por_id(self, id): return self.funcionarios.buscar_por_id(id)
+    #alinhar e padronizar (nomes) dos metodos e traze-los para cá.
 
     # --- 5. VISITANTES ---
     def adicionar_visitante_cadastro(self, v): return self.visitantes.adicionar(v)
