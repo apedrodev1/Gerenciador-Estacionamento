@@ -71,7 +71,7 @@ def cadastrar_novo_funcionario(repo):
         if not val.strip(): 
             return None, None # Regra 1: Se vazio, passa direto
         
-        # Regra 2: Se tem texto, joga pra a função validate_cnh_unica()resolver
+        # Regra 2: Se tem texto, joga pra a função validate_cnh_unica()
         return validate_cnh_unica(val, cnhs_existentes)
 
     cnh, _ = get_valid_input("CNH (Opcional): ", validador_cnh_opcional)
