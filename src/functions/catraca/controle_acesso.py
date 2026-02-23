@@ -3,17 +3,19 @@ Módulo: Controle de Acesso Inteligente (Wrapper).
 Responsabilidade: Receber uma placa e direcionar automaticamente para:
 - Entrada/Saída de Morador
 - Entrada/Saída de Visitante
+- Entrada/Saída de Funcionário
 Localização: src/functions/catraca/controle_acesso.py
 """
 from src.utils.input_handler import get_valid_input
 from src.utils.validations import validate_placa
 from src.ui.components import header, show_warning, Colors
 
-
 from src.functions.moradores.catraca.entrada_morador import registrar_entrada_morador
 from src.functions.moradores.catraca.saida_morador import registrar_saida_morador
 from src.functions.visitantes.catraca.entrada_visitante import registrar_entrada_visitante
 from src.functions.visitantes.catraca.saida_visitante import registrar_saida_visitante
+from src.functions.funcionarios.catraca.entrada_funcionario import registrar_entrada_funcionario
+from src.functions.funcionarios.catraca.saida_funcionario import registrar_saida_funcionario
 
 def registrar_acesso_unificado(repositorio, estacionamento):
     """
@@ -38,11 +40,9 @@ def registrar_acesso_unificado(repositorio, estacionamento):
         
         if ticket:
             print(f"🎫 Ticket de Visitante encontrado. Direcionando para SAÍDA...")
-            # CORREÇÃO: Passando 'estacionamento'
             registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         else:
             print(f"🆕 Veículo desconhecido. Direcionando para ENTRADA DE VISITANTE...")
-            # CORREÇÃO: Passando 'estacionamento'
             registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         return
 
@@ -61,7 +61,6 @@ def registrar_acesso_unificado(repositorio, estacionamento):
             registrar_saida_morador(repositorio, placa_pre_validada=placa)
         else:
             print("Status Atual: [FORA] ➡ Registrando ENTRADA...")
-            # Aqui passamos 'estacionamento' pois morador valida cota de vagas
             registrar_entrada_morador(repositorio, estacionamento, placa_pre_validada=placa)
         return
 
@@ -76,10 +75,25 @@ def registrar_acesso_unificado(repositorio, estacionamento):
         
         if ticket:
             print("Status Atual: [DENTRO] ➡ Registrando SAÍDA...")
-            # CORREÇÃO: Passando 'estacionamento'
             registrar_saida_visitante(repositorio, estacionamento, placa_pre_validada=placa)
         else:
             print("Status Atual: [FORA] ➡ Registrando ENTRADA...")
-            # CORREÇÃO: Passando 'estacionamento'
             registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=placa)
+        return
+
+    # --- CENÁRIO D: Veículo de FUNCIONÁRIO (Zona C) ---
+    if veiculo.funcionario_id:
+        funcionario = repositorio.funcionarios.buscar_por_id(veiculo.funcionario_id)
+        if not funcionario:
+            print(f"{Colors.RED}Erro de inconsistência: Veículo de funcionário sem dono válido.{Colors.RESET}")
+            return
+            
+        print(f"✅ Identificado: FUNCIONÁRIO - {funcionario.nome} ({funcionario.cargo})")
+        
+        if veiculo.estacionado:
+            print("Status Atual: [DENTRO] ➡ Registrando SAÍDA...")
+            registrar_saida_funcionario(repositorio, placa_pre_validada=placa)
+        else:
+            print("Status Atual: [FORA] ➡ Registrando ENTRADA...")
+            registrar_entrada_funcionario(repositorio, estacionamento, placa_pre_validada=placa)
         return
