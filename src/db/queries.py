@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS veiculos (
 );
 """
 
-# Tabela de Operação Rotativa
+# Tabela de Operação Rotativa - Visitantes
 CREATE_TABLE_TICKETS = """
 CREATE TABLE IF NOT EXISTS tickets_visitantes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,6 +79,18 @@ CREATE TABLE IF NOT EXISTS tickets_visitantes (
     entrada TEXT NOT NULL,
     id_visitante INTEGER,
     FOREIGN KEY(id_visitante) REFERENCES visitantes_cadastrados(id)
+);
+"""
+
+# NOVA TABELA: Tabela de Operação Rotativa - Zona C (Funcionários)
+CREATE_TABLE_CONTROLE_VAGAS_FUNCIONARIOS = """
+CREATE TABLE IF NOT EXISTS controle_vagas_funcionarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    placa TEXT NOT NULL,
+    numero_vaga INTEGER NOT NULL,
+    entrada TEXT NOT NULL,
+    id_funcionario INTEGER,
+    FOREIGN KEY(id_funcionario) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 """
 
@@ -114,7 +126,6 @@ SELECT_ALL_APARTAMENTOS = "SELECT * FROM apartamentos ORDER BY numero, bloco;"
 
 SELECT_APARTAMENTO_BY_ID = "SELECT * FROM apartamentos WHERE id=?;"
 
-# Busca composta para evitar duplicidade (Ex: Apto 101, Bloco A)
 SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND bloco=?;"
 
 
@@ -122,15 +133,12 @@ SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND
 # 2. MORADORES (CRUD Atualizado)
 # ==============================================================================
 
-# Agora salvamos o ID do apartamento, não o número direto
 INSERT_MORADOR = "INSERT INTO moradores (nome, cnh, id_apartamento) VALUES (?, ?, ?);"
 
-# O SELECT simples retorna o ID. Se precisar do numero, o Python busca no objeto Apartamento ou fazemos JOIN.
 SELECT_ALL_MORADORES = "SELECT * FROM moradores;"
 
 SELECT_MORADOR_BY_ID = "SELECT * FROM moradores WHERE id = ?;"
 
-# Busca moradores de um apartamento específico (Pelo ID do apto)
 SELECT_MORADORES_BY_APTO_ID = "SELECT * FROM moradores WHERE id_apartamento = ?;"
 
 UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;"
@@ -177,7 +185,6 @@ INSERT_VEICULO = """
 INSERT INTO veiculos (placa, modelo, cor, morador_id, visitante_id, funcionario_id, estacionado)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
-# Conta quantos veículos estão vinculados a moradores de um apto específico
 SELECT_COUNT_VEICULOS_BY_APTO_ID = """
 SELECT COUNT(*) 
 FROM veiculos v
@@ -189,9 +196,7 @@ SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
 SELECT_VEICULOS_BY_VISITANTE_ID = "SELECT * FROM veiculos WHERE visitante_id = ?;"
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
-# UPDATE ATUALIZADO (Incluindo funcionario_id)
 UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=?, funcionario_id=? WHERE placa=?;"
-
 DELETE_VEICULO = "DELETE FROM veiculos WHERE placa=?;"
 
 # Catraca
@@ -200,7 +205,7 @@ SET_VEICULO_SAIDA = "UPDATE veiculos SET estacionado = 0 WHERE placa = ?;"
 
 
 # ==============================================================================
-# 6. TICKETS (CATRACA VISITANTE)
+# 6. TICKETS E ROTATIVOS (CATRACA)
 # ==============================================================================
 INSERT_TICKET = "INSERT INTO tickets_visitantes (placa, numero_vaga, entrada, id_visitante) VALUES (?, ?, ?, ?);"
 SELECT_TICKET_ATIVO = "SELECT * FROM tickets_visitantes WHERE placa = ?;"
@@ -208,9 +213,17 @@ SELECT_ALL_TICKETS = "SELECT * FROM tickets_visitantes;"
 SELECT_VAGAS_OCUPADAS_VISITANTES = "SELECT numero_vaga FROM tickets_visitantes;"
 DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 
+# ==============================================================================
+# 6B. CONTROLE DE ZONA C (FUNCIONÁRIOS)
+# ==============================================================================
+INSERT_VAGA_FUNCIONARIO = "INSERT INTO controle_vagas_funcionarios (placa, numero_vaga, entrada, id_funcionario) VALUES (?, ?, ?, ?);"
+SELECT_VAGA_FUNCIONARIO_ATIVA = "SELECT * FROM controle_vagas_funcionarios WHERE placa = ?;"
+SELECT_VAGAS_OCUPADAS_FUNCIONARIOS = "SELECT numero_vaga FROM controle_vagas_funcionarios;"
+DELETE_VAGA_FUNCIONARIO = "DELETE FROM controle_vagas_funcionarios WHERE placa=?;"
+
 
 # ==============================================================================
-# 7. RELATÓRIOS E MAPA (SUPER QUERY COM JOIN)
+# 7. RELATÓRIOS E MAPA (SUPER QUERY COM JOIN - REFATORADA COM 'vaga_atual')
 # ==============================================================================
 
 SELECT_OCUPACAO_COMPLETA = """
@@ -219,7 +232,7 @@ SELECT
     'MORADOR' as tipo,              -- Coluna 0
     a.numero as apto_num,           -- Coluna 1
     a.bloco as apto_bloco,          -- Coluna 2
-    NULL as vaga_visitante,         -- Coluna 3 (Vazio para morador)
+    NULL as vaga_atual,             -- Coluna 3 (Vazio para morador)
     m.nome as proprietario,         -- Coluna 4
     v.placa,                        -- Coluna 5
     v.modelo,                       -- Coluna 6
@@ -236,7 +249,7 @@ SELECT
     'VISITANTE' as tipo,            -- Coluna 0
     NULL as apto_num,               -- Coluna 1 (Vazio para visitante)
     NULL as apto_bloco,             -- Coluna 2 (Vazio para visitante)
-    t.numero_vaga as vaga_visitante,-- Coluna 3
+    t.numero_vaga as vaga_atual,    -- Coluna 3 (Extraído do Ticket)
     COALESCE(vc.nome, 'ROTATIVO') as proprietario, -- Coluna 4
     t.placa,                        -- Coluna 5
     COALESCE(v.modelo, '---') as modelo, -- Coluna 6
@@ -247,18 +260,19 @@ LEFT JOIN veiculos v ON t.placa = v.placa
 
 UNION ALL
 
--- 3. Funcionários (Estacionados - ZONA C)
+-- 3. Funcionários (Estacionados na Zona C)
 SELECT 
     'FUNCIONARIO' as tipo,          -- Coluna 0
     NULL as apto_num,               -- Coluna 1
     NULL as apto_bloco,             -- Coluna 2
-    NULL as vaga_visitante,         -- Coluna 3
+    cvf.numero_vaga as vaga_atual,  -- Coluna 3 (Extraído do Controle de RH)
     f.nome as proprietario,         -- Coluna 4
     v.placa,                        -- Coluna 5
     v.modelo,                       -- Coluna 6
     v.cor                           -- Coluna 7
 FROM veiculos v
 JOIN funcionarios f ON v.funcionario_id = f.id
+JOIN controle_vagas_funcionarios cvf ON v.placa = cvf.placa
 WHERE v.estacionado = 1
 ;
 """
