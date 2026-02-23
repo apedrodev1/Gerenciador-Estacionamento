@@ -26,7 +26,7 @@ def registrar_entrada_visitante(repositorio, estacionamento, placa_pre_validada=
     vagas_ocupadas = {str(t.numero_vaga) for t in tickets_ativos}
     
     # A classe Estacionamento decide qual vaga dar (respeitando o limite do .env)
-    vaga_livre = estacionamento.alocar_vaga_visitante(vagas_ocupadas)
+    vaga_livre = estacionamento.alocar_vaga_livre(estacionamento.capacidade_visitantes, vagas_ocupadas)
 
     if vaga_livre is None:
         show_error("O estacionamento está LOTADO para visitantes!")
