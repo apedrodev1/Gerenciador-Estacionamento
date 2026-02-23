@@ -1,12 +1,12 @@
 """
-Classe Estacionamento (Final)
+Classe Estacionamento
 Responsabilidade: Gerenciar limites físicos, regras de tempo e zonas.
 Não acessa banco de dados.
 """
 from datetime import datetime
 
 class Estacionamento:
-    def __init__(self, nome, capacidade_visitantes, capacidade_moradores, tempo_limite_minutos, capacidade_funcionarios=10):
+    def __init__(self, nome, capacidade_visitantes, capacidade_moradores, tempo_limite_minutos, capacidade_funcionarios):
         self.nome = nome
         
         # --- ZONAS E CAPACIDADES ---
@@ -17,7 +17,7 @@ class Estacionamento:
         # Zona B (Moradores): Vagas garantidas
         self.capacidade_moradores = int(capacidade_moradores)
 
-        # Zona C (Funcionários): Vagas limitadas para o RH
+        # Zona C (Funcionários): Vagas limitadas para os funcionários
         self.capacidade_funcionarios = int(capacidade_funcionarios)
         
         # Capacidade Total (Soma das Zonas)
@@ -56,12 +56,13 @@ class Estacionamento:
 
     # --- MÉTODOS DE REGRA DE NEGÓCIO ---
 
-    def alocar_vaga_visitante(self, vagas_ocupadas_set):
+    def alocar_vaga_livre(self, capacidade_da_zona, vagas_ocupadas_set):
         """
-        Descobre qual vaga (1 ao limite) está livre.
-        Retorna: int (ex: 5) ou None.
+        Descobre qual vaga (1 ao limite da zona solicitada) está livre.
+        Funciona de forma abstrata (Polimórfica) para Visitantes e Funcionários.
+        Retorna: int (ex: 5) ou None se lotado.
         """
-        for i in range(1, self.capacidade_visitantes + 1):
+        for i in range(1, capacidade_da_zona + 1):
             if str(i) not in vagas_ocupadas_set:
                 return i
         return None
