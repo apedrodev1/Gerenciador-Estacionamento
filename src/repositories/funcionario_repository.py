@@ -22,7 +22,7 @@ class FuncionarioRepository(BaseRepository):
                 funcionario.cpf,  # Já validado pelo Setter da classe
                 funcionario.cargo,
                 funcionario.cnh,  # Pode ser None
-                funcionario.id_usuario # Pode ser None
+                funcionario.id_usuario 
             ))
             return cursor.lastrowid
             
