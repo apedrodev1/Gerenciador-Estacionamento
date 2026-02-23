@@ -30,8 +30,9 @@ def inicializar_sistema():
 
     # 2. Configurações de Negócio do Estacionamento
     try:
-        cap_vis = int(os.getenv("CAPACIDADE_VISITANTES", 20))
         cap_mor = int(os.getenv("CAPACIDADE_MORADORES", 50))
+        cap_vis = int(os.getenv("CAPACIDADE_VISITANTES", 20))
+        cap_func = int(os.getenv("CAPACIDADE_FUNCIONARIOS", 10))
         tempo = int(os.getenv("TIME_LIMIT_MINUTES", 120))
         nome = os.getenv("PARKING_NAME", "Condomínio Solar")
     except ValueError:
@@ -41,8 +42,10 @@ def inicializar_sistema():
     # Cria a instância com os valores lidos
     estacionamento = Estacionamento(
         nome=nome,
-        capacidade_visitantes=cap_vis,
         capacidade_moradores=cap_mor, 
+        capacidade_funcionarios=cap_func,
+        capacidade_visitantes=cap_vis,
+        
         tempo_limite_minutos=tempo
     )
     
