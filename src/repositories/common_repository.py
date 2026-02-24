@@ -23,6 +23,11 @@ class CommonRepository(BaseRepository):
             manager.execute(queries.CREATE_TABLE_MORADORES) # Depende de Apartamentos
             manager.execute(queries.CREATE_TABLE_VEICULOS)  # Depende de Moradores
             manager.execute(queries.CREATE_TABLE_FUNCIONARIOS) # Depende de Moradores
+            
+            
+            #  manager.execute(queries .CREATE_TABLE_CONTROLE_VAGAS_MORADORES) PENSAR EM COMO RESOLVER O CODESMELL DE .vaga_atual = None PARA MORADOR, RESPEITANDO A REGRA DE NEGOCIO DE 2 VAGAS POR APTO - VER 
+
+            manager.execute(queries .CREATE_TABLE_CONTROLE_VAGAS_FUNCIONARIOS) 
             manager.execute(queries.CREATE_TABLE_TICKETS)
             manager.execute(queries.CREATE_TABLE_HISTORICO)
             
@@ -49,14 +54,14 @@ class CommonRepository(BaseRepository):
             # para facilitar o uso no front-end (mapa.py)
             for row in cursor.fetchall():
                 # Ordem definida no SELECT do queries.py:
-                # 0:tipo, 1:apto_num, 2:apto_bloco, 3:vaga_vis, 
+                # 0:tipo, 1:apto_num, 2:apto_bloco, 3:vaga_atual, 
                 # 4:proprietario, 5:placa, 6:modelo, 7:cor
                 
                 item = {
-                    "tipo": row[0],            # 'MORADOR' ou 'VISITANTE'
+                    "tipo": row[0],            # 'MORADOR' ou 'VISITANTE' ou 'FUNCIONARIO'
                     "apto_num": row[1],
                     "apto_bloco": row[2],
-                    "vaga_visitante": row[3],
+                    "vaga_atual": row[3],      # <--- ATUALIZADO AQUI
                     "proprietario": row[4],    # Nome do dono
                     "placa": row[5],
                     "modelo": row[6],
@@ -88,9 +93,17 @@ class CommonRepository(BaseRepository):
         except Exception as e:
             print(f"❌ Erro ao buscar histórico: {e}")
             return []
-            
+
+ # IMPLEMENTAR A FUNCAO DE CONTROLE DE CPF       
+    def listar_todos_cpfs(self):
+        """Busca CPFs em Moradores, Visitantes e Funcionários para evitar duplicidade."""
+        cursor = self._get_cursor
+        cpfs = set()
+
+        return cpfs
+        
     def listar_todas_cnhs(self):
-        """Busca CNHs em Moradores e Visitantes para evitar duplicidade."""
+        """Busca CNHs em Moradores, Visitantes e Funcionários para evitar duplicidade."""
         cursor = self._get_cursor()
         cnhs = set()
         try:
@@ -98,6 +111,9 @@ class CommonRepository(BaseRepository):
             cnhs.update([r[0] for r in cursor.fetchall()])
             
             cursor.execute("SELECT cnh FROM visitantes_cadastrados")
+            cnhs.update([r[0] for r in cursor.fetchall()])
+            
+            cursor.execute("SELECT cnh FROM funcionarios WHERE cnh IS NOT NULL")
             cnhs.update([r[0] for r in cursor.fetchall()])
             
             return cnhs
