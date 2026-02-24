@@ -141,7 +141,7 @@ SELECT_MORADOR_BY_ID = "SELECT * FROM moradores WHERE id = ?;"
 
 SELECT_MORADORES_BY_APTO_ID = "SELECT * FROM moradores WHERE id_apartamento = ?;"
 
-UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;"
+UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;" #CNH NÃO PODE MUDAR, IMUTAVEL!
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
 
@@ -171,20 +171,27 @@ DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
 # ==============================================================================
 # 4. VISITANTES (CADASTRO PESSOA)
 # ==============================================================================
+
 INSERT_VISITANTE_CADASTRO = "INSERT INTO visitantes_cadastrados (nome, cnh, data_cadastro) VALUES (?, ?, ?);"
+
 SELECT_ALL_VISITANTES = "SELECT * FROM visitantes_cadastrados ORDER BY nome;"
+
 SELECT_VISITANTE_BY_ID = "SELECT * FROM visitantes_cadastrados WHERE id = ?;"
-UPDATE_VISITANTE = "UPDATE visitantes_cadastrados SET nome=?, cnh=? WHERE id=?;"
+
+UPDATE_VISITANTE = "UPDATE visitantes_cadastrados SET nome=?, cnh=? WHERE id=?;" #CNH NÃO PODE MUDAR, IMUTAVEL!
+
 DELETE_VISITANTE = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 
 
 # ==============================================================================
 # 5. VEÍCULOS (CRUD + OPERAÇÃO)
 # ==============================================================================
+
 INSERT_VEICULO = """
 INSERT INTO veiculos (placa, modelo, cor, morador_id, visitante_id, funcionario_id, estacionado)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
+
 SELECT_COUNT_VEICULOS_BY_APTO_ID = """
 SELECT COUNT(*) 
 FROM veiculos v
@@ -192,33 +199,50 @@ JOIN moradores m ON v.morador_id = m.id
 WHERE m.id_apartamento = ?;
 """
 SELECT_VEICULO_BY_PLACA = "SELECT * FROM veiculos WHERE placa = ?;"
+
 SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
+
+#SELECT_VEICULOS_BY_FUNCIONARIO_ID = "SELECT * FROM veiculos WHERE funcionario_id = ?;"
+
 SELECT_VEICULOS_BY_VISITANTE_ID = "SELECT * FROM veiculos WHERE visitante_id = ?;"
+
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
 UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=?, funcionario_id=? WHERE placa=?;"
+
 DELETE_VEICULO = "DELETE FROM veiculos WHERE placa=?;"
 
 # Catraca
+
 SET_VEICULO_ESTACIONADO = "UPDATE veiculos SET estacionado = 1 WHERE placa = ?;"
+
 SET_VEICULO_SAIDA = "UPDATE veiculos SET estacionado = 0 WHERE placa = ?;"
 
 
 # ==============================================================================
 # 6. TICKETS E ROTATIVOS (CATRACA)
 # ==============================================================================
+
 INSERT_TICKET = "INSERT INTO tickets_visitantes (placa, numero_vaga, entrada, id_visitante) VALUES (?, ?, ?, ?);"
+
 SELECT_TICKET_ATIVO = "SELECT * FROM tickets_visitantes WHERE placa = ?;"
+
 SELECT_ALL_TICKETS = "SELECT * FROM tickets_visitantes;"
+
 SELECT_VAGAS_OCUPADAS_VISITANTES = "SELECT numero_vaga FROM tickets_visitantes;"
+
 DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 
 # ==============================================================================
 # 6B. CONTROLE DE ZONA C (FUNCIONÁRIOS)
 # ==============================================================================
+
 INSERT_VAGA_FUNCIONARIO = "INSERT INTO controle_vagas_funcionarios (placa, numero_vaga, entrada, id_funcionario) VALUES (?, ?, ?, ?);"
+
 SELECT_VAGA_FUNCIONARIO_ATIVA = "SELECT * FROM controle_vagas_funcionarios WHERE placa = ?;"
+
 SELECT_VAGAS_OCUPADAS_FUNCIONARIOS = "SELECT numero_vaga FROM controle_vagas_funcionarios;"
+
 DELETE_VAGA_FUNCIONARIO = "DELETE FROM controle_vagas_funcionarios WHERE placa=?;"
 
 
@@ -280,6 +304,7 @@ WHERE v.estacionado = 1
 # ==============================================================================
 # 8. HISTÓRICO
 # ==============================================================================
+
 INSERT_HISTORICO = "INSERT INTO historico_movimentacao (data_hora, placa, tipo_veiculo, tipo_evento) VALUES (?, ?, ?, ?);"
 
 SELECT_HISTORICO_RECENTE = """
