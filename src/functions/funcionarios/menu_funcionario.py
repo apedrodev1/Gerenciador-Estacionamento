@@ -10,7 +10,7 @@ def executar_menu_funcionarios(repo):
         header("GESTÃO DE RH", "Controle de Funcionários e Colaboradores")
         
         menu_option("1", "Cadastrar Novo Funcionário")
-        menu_option("2", "Editar Dados (Cargo/CNH)")
+        menu_option("2", "Editar Dados") 
         menu_option("3", "Demitir / Inativar")
         menu_option("4", "Listar Quadro de Funcionários")
         print("-" * 40)
@@ -30,7 +30,6 @@ def executar_menu_funcionarios(repo):
         elif opcao == '4':
             clear_screen()
             selecionar_funcionario(repo, apenas_listar=True)
-            
             
         elif opcao == '0':
             break
