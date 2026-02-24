@@ -19,9 +19,9 @@ class FuncionarioRepository(BaseRepository):
         try:
             cursor.execute(queries.INSERT_FUNCIONARIO, (
                 funcionario.nome,
-                funcionario.cpf,  # Já validado pelo Setter da classe
+                funcionario.cpf,  
                 funcionario.cargo,
-                funcionario.cnh,  # Pode ser None
+                funcionario.cnh,  
                 funcionario.id_usuario 
             ))
             return cursor.lastrowid
@@ -35,18 +35,18 @@ class FuncionarioRepository(BaseRepository):
     def listar(self) -> list[Funcionario]:
         """Retorna todos os funcionários ATIVOS."""
         cursor = self._get_cursor()
-        cursor.execute(queries.SELECT_ALL_FUNCIONARIOS)
-        
         lista = []
-        for row in cursor.fetchall():
-            lista.append(self._montar_objeto(row))
-        return lista
+        try:
+            cursor.execute(queries.SELECT_ALL_FUNCIONARIOS)
+            for row in cursor.fetchall():
+                lista.append(self._montar_objeto(row))
+            return lista
+        except Exception as e:
+            print(f"Erro ao listar funcionários: {e}")
+            return []
 
     def buscar_por_id(self, id_func: int) -> Funcionario:
-        """Busca funcionário pelo ID (mesmo inativos, se quiser mudar a query depois)."""
-        # Nota: A query SELECT_ALL filtra ativos, mas buscar por ID geralmente queremos achar
-        # mesmo se tiver demitido, para histórico.
-        # Vamos usar uma query direta aqui para ser flexível.
+        """Busca funcionário pelo ID (mesmo inativos, para histórico)."""
         cursor = self._get_cursor()
         cursor.execute("SELECT * FROM funcionarios WHERE id = ?", (id_func,))
         row = cursor.fetchone()
@@ -73,7 +73,7 @@ class FuncionarioRepository(BaseRepository):
             funcionario.cargo,
             funcionario.cnh,
             funcionario.id_usuario,
-            funcionario.id # WHERE id = ?
+            funcionario.id 
         ))
 
     def remover(self, id_func: int):
@@ -89,13 +89,9 @@ class FuncionarioRepository(BaseRepository):
         cursor = self._get_cursor()
         query = "UPDATE funcionarios SET ativo = 1 WHERE id = ?;"
         cursor.execute(query, (id_func,))
-        # O commit é feito pelo __exit__ do gerenciador, mas se quiser garantir:
-        # self.conn.commit()
-   
 
     def _montar_objeto(self, row) -> Funcionario:
         """Helper para converter tupla do banco em Objeto."""
-        # Colunas: id, nome, cpf, cargo, cnh, ativo, id_usuario
         return Funcionario(
             id=row[0],
             nome=row[1],
