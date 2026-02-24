@@ -23,14 +23,9 @@ def editar_dados_funcionario(repo):
         
         # CNH e CPF agora são apenas visuais (Imutáveis)
         cnh_display = func.cnh if func.cnh else "Não cadastrada"
-        subtitulo = f"CPF: {func.cpf} |"
+        subtitulo = f"CPF: {func.cpf} | CNH: {cnh_display}"
         
         header(f"EDITANDO: {func.nome}", subtitulo)
-        
-        # Verifica se tem veículo vinculado (Precisamos implementar buscar_por_funcionario no repo de veiculos,
-        # ou buscar pela placa se soubermos. Por enquanto, vamos listar e filtrar na "mão" ou adicionar o método)
-        # SUPONDO que repo.veiculos.buscar_por_funcionario(id) exista. Se não, implementaremos.
-        # Por enquanto, mostramos opção genérica.
         
         print(f"{Colors.BOLD}1.{Colors.RESET} Alterar Nome:   {Colors.CYAN}{func.nome}{Colors.RESET}")
         print(f"{Colors.BOLD}2.{Colors.RESET} Alterar Cargo:  {Colors.CYAN}{func.cargo}{Colors.RESET}")
@@ -58,7 +53,7 @@ def editar_dados_funcionario(repo):
                 gerenciar_veiculo_funcionario(repo, func)
 
             elif opcao == '0':
-                repo.funcionarios.atualizar(func)
+                repo.atualizar_funcionario(func) # <--- Usando a Fachada
                 show_success(f"Dados de {func.nome} atualizados!")
                 break
             
@@ -69,33 +64,48 @@ def editar_dados_funcionario(repo):
             show_error(f"Erro: {e}")
 
 def gerenciar_veiculo_funcionario(repo, func):
-    """Sub-função para adicionar/remover veículo do funcionário."""
+    """Sub-função para adicionar, editar ou remover veículo do funcionário."""
     clear_screen()
     header(f"VEÍCULO DE {func.nome.upper()}")
     
-    # Busca veículos deste funcionário
-    # Precisamos adicionar este método no VeiculoRepository!
-    # Vou usar um método hipotético 'listar_por_funcionario'.
-    veiculos = repo.veiculos.listar_por_funcionario(func.id) 
+    # Busca veículos deste funcionário usando a Fachada
+    veiculos = repo.listar_veiculos_por_funcionario(func.id) 
     
     if veiculos:
-        print(f"Veículo atual: {Colors.GREEN}{veiculos[0].modelo} - {veiculos[0].placa}{Colors.RESET}\n")
-        print("1. Remover este veículo")
+        carro_atual = veiculos[0]
+        print(f"Veículo atual: {Colors.GREEN}{carro_atual.modelo} - {carro_atual.cor} | Placa: {carro_atual.placa}{Colors.RESET}\n")
+        print("1. Editar Veículo (Modelo/Cor)")
+        print("2. Remover este veículo")
         print("0. Voltar")
+        
         op = input("\nOpção: ")
+        
         if op == '1':
-            repo.veiculos.remover(veiculos[0].placa) # Remove do banco
+            novo_modelo = input(f"Novo modelo (Atual: {carro_atual.modelo}): ").strip().upper()
+            nova_cor = input(f"Nova cor (Atual: {carro_atual.cor}): ").strip().upper()
+            
+            # Atualiza apenas se digitou algo
+            if novo_modelo: carro_atual.modelo = novo_modelo
+            if nova_cor: carro_atual.cor = nova_cor
+            
+            repo.atualizar_veiculo(carro_atual) 
+            show_success("Veículo atualizado!")
+            
+        elif op == '2':
+            repo.remover_veiculo(carro_atual.placa) 
             show_success("Veículo removido!")
+            
     else:
         print(f"{Colors.YELLOW}Nenhum veículo vinculado.{Colors.RESET}\n")
         print("1. Adicionar Veículo")
         print("0. Voltar")
+        
         op = input("\nOpção: ")
         if op == '1':
             placa, _ = get_valid_input("Placa: ", validate_placa)
             
-            # Verifica se placa já existe
-            if repo.veiculos.buscar_por_placa(placa):
+            # Verifica se placa já existe usando a Fachada
+            if repo.buscar_veiculo_por_placa(placa):
                 show_error("Placa já cadastrada no sistema!")
                 return
 
@@ -103,5 +113,5 @@ def gerenciar_veiculo_funcionario(repo, func):
             cor = input("Cor: ").strip().upper()
             
             novo_carro = Veiculo(placa=placa, modelo=modelo, cor=cor, funcionario_id=func.id)
-            repo.veiculos.adicionar(novo_carro)
+            repo.adicionar_veiculo(novo_carro) # <--- Usando a Fachada
             show_success("Veículo adicionado com sucesso!")
