@@ -83,7 +83,7 @@ def registrar_acesso_unificado(repositorio, estacionamento):
 
     # --- CENÁRIO D: Veículo de FUNCIONÁRIO (Zona C) ---
     if veiculo.funcionario_id:
-        funcionario = repositorio.funcionarios.buscar_por_id(veiculo.funcionario_id)
+        funcionario = repositorio.buscar_funcionario_por_id(veiculo.funcionario_id)
         if not funcionario:
             print(f"{Colors.RED}Erro de inconsistência: Veículo de funcionário sem dono válido.{Colors.RESET}")
             return
