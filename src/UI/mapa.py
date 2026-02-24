@@ -27,12 +27,13 @@ def exibir_mapa_estacionamento(repositorio):
 
     count_visitantes = 0
     count_moradores = 0
+    count_funcionarios = 0 
 
     for row in ocupacao: 
-        tipo_db = row['tipo']      # 'MORADOR' ou 'VISITANTE'
+        tipo_db = row['tipo']      # 'MORADOR', 'VISITANTE' ou 'FUNCIONARIO'
         apto_num = row['apto_num']
         apto_bloco = row['apto_bloco']
-        vaga_vis = row['vaga_visitante']
+        vaga_atual = row['vaga_atual'] # <--- Atualizado para a variável abstrata
         nome = row['proprietario']
         placa = row['placa']
         modelo = row['modelo']
@@ -49,9 +50,16 @@ def exibir_mapa_estacionamento(repositorio):
         
         elif tipo_db == 'VISITANTE':
             count_visitantes += 1
-            local_fmt = f"Vaga {vaga_vis}"
+            local_fmt = f"Vaga {vaga_atual}" # <--- Usa a variável abstrata
             tipo_fmt = "[bold yellow]Visitante 🚗[/bold yellow]"
             nome_fmt = nome
+
+        elif tipo_db == 'FUNCIONARIO':
+            count_funcionarios += 1
+            local_fmt = f"Zona C - Vaga {vaga_atual}" # <--- Usa a mesma variável abstrata!
+            tipo_fmt = "[bold green]Funcionário 💼[/bold green]"
+            nome_fmt = f"[bold]{nome}[/bold]"
+            
         else:
             local_fmt = "???"
             tipo_fmt = "[red]Desconhecido[/red]"
@@ -67,8 +75,8 @@ def exibir_mapa_estacionamento(repositorio):
 
     console.print(table)
 
-    total = count_moradores + count_visitantes
+    total = count_moradores + count_visitantes + count_funcionarios 
     
-    console.print(f"\n[dim]Total: {total} | Visitantes: {count_visitantes} | Moradores: {count_moradores}[/dim]")
+    console.print(f"\n[dim]Total: {total} | Moradores: {count_moradores} | Visitantes: {count_visitantes} | Funcionários: {count_funcionarios}[/dim]")
     
     input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
