@@ -46,10 +46,13 @@ class FuncionarioRepository(BaseRepository):
             return []
 
     def listar_vagas_ocupadas_funcionarios(self):
-        """Retorna uma lista de tuplas (id_funcionario, nome_funcionario, vagas_ocupadas) para cada funcionário."""
+        """
+        Retorna um set com os números das vagas ocupadas na Zona C.
+        Ex: {'1', '3', '10'}
+        Vital para a classe Estacionamento alocar a próxima vaga livre.
+        """
         cursor = self._get_cursor()
         cursor.execute(queries.SELECT_VAGAS_OCUPADAS_FUNCIONARIOS)
-
         return {str(row[0]) for row in cursor.fetchall()}
 
     def buscar_por_id(self, id_func: int) -> Funcionario:
