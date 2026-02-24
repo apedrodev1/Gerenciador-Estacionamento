@@ -97,8 +97,11 @@ class EstacionamentoRepository:
     # --- 4. RH (FUNCIONÁRIOS) ---
     def adicionar_funcionario(self, f): return self.funcionarios.adicionar(f)
     def listar_funcionarios(self): return self.funcionarios.listar()
-    #def buscar_funcionario_por_id(self, id): return self.funcionarios.buscar_por_id(id)
-    #alinhar e padronizar (nomes) dos metodos e traze-los para cá.
+    def buscar_funcionario_por_id(self, id): return self.funcionarios.buscar_por_id(id)
+    def buscar_funcionario_por_cpf(self, cpf): return self.funcionarios.buscar_por_cpf(cpf)
+    def atualizar_funcionario(self, f): return self.funcionarios.atualizar(f)
+    def remover_funcionario(self, id): return self.funcionarios.remover(id)
+    def reativar_funcionario(self, id): return self.funcionarios.reativar(id)
 
     # --- 5. VISITANTES ---
     def adicionar_visitante_cadastro(self, v): return self.visitantes.adicionar(v)
@@ -107,10 +110,11 @@ class EstacionamentoRepository:
     def atualizar_visitante_cadastro(self, v): return self.visitantes.atualizar(v)
     def remover_visitante_cadastro(self, id): return self.visitantes.remover(id)
 
-    # --- 6. VEÍCULOS ---
+    # --- 6. VEÍCULOS E ZONA C ---
     def adicionar_veiculo(self, v): return self.veiculos.adicionar(v)
     def listar_veiculos_por_morador(self, id_morador): return self.veiculos.listar_por_morador(id_morador)
     def listar_veiculos_por_visitante(self, id_visitante): return self.veiculos.listar_por_visitante(id_visitante)
+    def listar_veiculos_por_funcionario(self, id_funcionario): return self.veiculos.listar_por_funcionario(id_funcionario)
     def listar_todas_placas(self): return self.veiculos.listar_todas_placas()
     def buscar_veiculo_por_placa(self, placa): return self.veiculos.buscar_por_placa(placa)
     def buscar_historico_por_placa(self, placa):return self.common.buscar_historico_por_placa(placa)
@@ -119,6 +123,11 @@ class EstacionamentoRepository:
     def remover_veiculo(self, placa): return self.veiculos.remover(placa)
     def registrar_entrada_veiculo(self, placa, tipo_dono): return self.veiculos.registrar_entrada(placa, tipo_dono)
     def registrar_saida_veiculo(self, placa, tipo_dono): return self.veiculos.registrar_saida(placa, tipo_dono)
+    
+    # Controle de Vagas (Zona C)
+    def registrar_vaga_funcionario(self, placa, numero_vaga, id_funcionario): return self.veiculos.registrar_vaga_funcionario(placa, numero_vaga, id_funcionario)
+    def liberar_vaga_funcionario(self, placa): return self.veiculos.liberar_vaga_funcionario(placa)
+    def listar_vagas_ocupadas_funcionarios(self): return self.veiculos.listar_vagas_ocupadas_funcionarios()
 
     # --- 7. TICKETS ---
     def criar_ticket(self, t): return self.tickets.criar_ticket(t)
