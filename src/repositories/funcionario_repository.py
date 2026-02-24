@@ -45,6 +45,13 @@ class FuncionarioRepository(BaseRepository):
             print(f"Erro ao listar funcionários: {e}")
             return []
 
+    def listar_vagas_ocupadas_funcionarios(self):
+        """Retorna uma lista de tuplas (id_funcionario, nome_funcionario, vagas_ocupadas) para cada funcionário."""
+        cursor = self._get_cursor()
+        cursor.execute(queries.SELECT_VAGAS_OCUPADAS_FUNCIONARIOS)
+
+        return {str(row[0]) for row in cursor.fetchall()}
+
     def buscar_por_id(self, id_func: int) -> Funcionario:
         """Busca funcionário pelo ID (mesmo inativos, para histórico)."""
         cursor = self._get_cursor()
