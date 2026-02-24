@@ -1,3 +1,48 @@
 Notas de correção: 
 
-ui.mapa.py >> controle_acesso > proximos passos
+erro ao tentar entrar na catraca: 
+
+Rolling back changes due to error: 'VeiculoRepository' object has no attribute 'listar_vagas_ocupadas_funcionarios'
+Traceback (most recent call last):
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\index.py", line 24, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\index.py", line 21, in main
+    executar_menu_principal(repo, estacionamento, usuario_logado)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\ui\menu.py", line 106, in executar_menu_principal
+    registrar_acesso_unificado(repo, estacionamento)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\functions\catraca\controle_acesso.py", line 98, in registrar_acesso_unificado
+    registrar_entrada_funcionario(repositorio, estacionamento, placa_pre_validada=placa)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\functions\funcionarios\catraca\entrada_funcionario.py", line 22, in registrar_entrada_funcionario
+    vagas_ocupadas = repositorio.listar_vagas_ocupadas_funcionarios()
+  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\repositories\estacionamento_repository.py", line 130, in listar_vagas_ocupadas_funcionarios
+    def listar_vagas_ocupadas_funcionarios(self): return self.veiculos.listar_vagas_ocupadas_funcionarios()
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'VeiculoRepository' object has no attribute 'listar_vagas_ocupadas_funcionarios'
+
+Realmente a funcao listar_vagas_ocupadas_funcionarios nao existe no VeiculoRepository mas ela é camada no estacionamento_repository. Ver!!
+
+Validaçao de placas, a validacao de funcionario apenas percorre a coluna placas.funcionarios, esta errado... Sendo que a coluna placas de Moradores e Funcionarios sao relacionais. Resaltando que a funcao de verificar cpf no momento so atua na classe Funcionarios, a propriedade ainda nao foi criada para Moradores e Visitantes.     
+
+
+Quando crasha o bd apaga tudo 
+
+
+
+Pensar em resolver o codesmell de vaga_atual de Moradores, talvez com a coluna:
+
+            #  manager.execute(queries .CREATE_TABLE_CONTROLE_VAGAS_MORADORES) PENSAR EM COMO RESOLVER O CODESMELL DE .vaga_atual = None PARA MORADOR, RESPEITANDO A REGRA DE NEGOCIO DE 2 VAGAS POR APTO - VER 
+
+
+
+Monitorar Patio Visitantes, quando o patio está vazio a condicao if not tickets, nao limpa a tela, resolver essa UI 
+src.functions.visitantes.catraca.listar_ativos_py
+linha 22: 
+    if not tickets:
+        # clear_screen()
+        print(f"\n{Colors.YELLOW}ℹ O pátio de visitantes está vazio.{Colors.RESET}")
+        input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
+        return
