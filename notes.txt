@@ -1,48 +1,24 @@
 Notas de correção: 
+1. Classe vs Repositório (A Zona C)
+Você matou a charada: tentar unir os dois seria loucura e semanticamente errado.
+Nós não precisamos criar uma classe TicketFuncionario porque o funcionário não tem "tempo de permanência" nem "pagamento" como o visitante tem. Ele apenas ocupa um espaço físico.
+A solução: Vamos apenas criar um repositório novinho e enxuto (ex: VagasZonaCRepository) que será responsável exclusivamente por gerenciar aquela tabela controle_vagas_funcionarios. Assim, o VeiculoRepository volta a cuidar apenas do "carro de metal" e não do chão que ele ocupa.
 
-erro ao tentar entrar na catraca: 
+2. Logs na Catraca
+Exatamente! O repositório de veículos é a "garagem", ele não tem que ser o "caderninho do porteiro". Vamos jogar a responsabilidade de gravar na tabela historico_movimentacao para quem realmente controla o fluxo (a catraca / repositório comum).
 
-Rolling back changes due to error: 'VeiculoRepository' object has no attribute 'listar_vagas_ocupadas_funcionarios'
-Traceback (most recent call last):
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\index.py", line 24, in <module>
-    main()
-    ~~~~^^
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\index.py", line 21, in main
-    executar_menu_principal(repo, estacionamento, usuario_logado)
-    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\ui\menu.py", line 106, in executar_menu_principal
-    registrar_acesso_unificado(repo, estacionamento)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\functions\catraca\controle_acesso.py", line 98, in registrar_acesso_unificado
-    registrar_entrada_funcionario(repositorio, estacionamento, placa_pre_validada=placa)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\functions\funcionarios\catraca\entrada_funcionario.py", line 22, in registrar_entrada_funcionario
-    vagas_ocupadas = repositorio.listar_vagas_ocupadas_funcionarios()
-  File "C:\Users\Pedro Augusto\Desktop\Gerenciador-Estacionamento\src\repositories\estacionamento_repository.py", line 130, in listar_vagas_ocupadas_funcionarios
-    def listar_vagas_ocupadas_funcionarios(self): return self.veiculos.listar_vagas_ocupadas_funcionarios()
-                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'VeiculoRepository' object has no attribute 'listar_vagas_ocupadas_funcionarios'
+3. Imutabilidade (CNH e CPF)
+Perfeito e super simples de resolver. O banco de dados é a nossa última linha de defesa. Vamos apenas remover o cnh=? e o cpf=? das strings de UPDATE lá no queries.py. Se não tem na query, é impossível o sistema alterar, mesmo que um desenvolvedor júnior tente forçar isso no Python no futuro. Blindagem nível sênior.
 
-Realmente a funcao listar_vagas_ocupadas_funcionarios nao existe no VeiculoRepository mas ela é camada no estacionamento_repository. Ver!!
+4. A Armadilha do Delete Cascade (Exclusão Lógica)
+Aqui tem um detalhe crucial: como a demissão do funcionário é uma exclusão lógica (UPDATE funcionarios SET ativo = 0), o ON DELETE CASCADE automático do banco de dados não vai ser disparado (porque a linha não foi apagada de verdade).
+A solução: No momento em que chamarmos a função de demitir, o Python vai precisar fazer o trabalho sujo:
 
-Validaçao de placas, a validacao de funcionario apenas percorre a coluna placas.funcionarios, esta errado... Sendo que a coluna placas de Moradores e Funcionarios sao relacionais. Resaltando que a funcao de verificar cpf no momento so atua na classe Funcionarios, a propriedade ainda nao foi criada para Moradores e Visitantes.     
+Verificar se o carro do demitido está na Zona C e dar "baixa" na vaga.
 
+Apagar o carro dele da tabela de veículos.
 
-Quando crasha o bd apaga tudo 
+Inativar o funcionário.
 
-
-
-Pensar em resolver o codesmell de vaga_atual de Moradores, talvez com a coluna:
-
-            #  manager.execute(queries .CREATE_TABLE_CONTROLE_VAGAS_MORADORES) PENSAR EM COMO RESOLVER O CODESMELL DE .vaga_atual = None PARA MORADOR, RESPEITANDO A REGRA DE NEGOCIO DE 2 VAGAS POR APTO - VER 
-
-
-
-Monitorar Patio Visitantes, quando o patio está vazio a condicao if not tickets, nao limpa a tela, resolver essa UI 
-src.functions.visitantes.catraca.listar_ativos_py
-linha 22: 
-    if not tickets:
-        # clear_screen()
-        print(f"\n{Colors.YELLOW}ℹ O pátio de visitantes está vazio.{Colors.RESET}")
-        input(f"\n{Colors.DIM}Pressione Enter para voltar...{Colors.RESET}")
-        return
+5. Validação Global
+Fechado! O CommonRepository será a nossa "Receita Federal" e "Detran" internos. Ninguém cadastra nada sem ele dar o sinal verde.
