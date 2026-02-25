@@ -1,5 +1,5 @@
 """
-Módulo de Queries SQL (Refatorado v2).
+Módulo de Queries SQL (Refatorado v3 - Imutabilidade e Exclusão Física).
 Reflete a arquitetura Relacional: Apartamento -> Morador -> Veículo.
 """
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS moradores (
 );
 """
 
-# Tabela de Funcionários
+# Tabela de Funcionários 
 CREATE_TABLE_FUNCIONARIOS = """
 CREATE TABLE IF NOT EXISTS funcionarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS funcionarios (
     cpf TEXT UNIQUE NOT NULL,
     cargo TEXT NOT NULL,
     cnh TEXT,                   -- Opcional
-    ativo BOOLEAN DEFAULT 1,    -- 1=Ativo, 0=Demitido
     id_usuario INTEGER,         -- Vínculo opcional com Login
     FOREIGN KEY(id_usuario) REFERENCES usuarios(id)
 );
@@ -82,7 +81,7 @@ CREATE TABLE IF NOT EXISTS tickets_visitantes (
 );
 """
 
-# NOVA TABELA: Tabela de Operação Rotativa - Zona C (Funcionários)
+# Tabela de Operação Rotativa - Zona C (Funcionários)
 CREATE_TABLE_CONTROLE_VAGAS_FUNCIONARIOS = """
 CREATE TABLE IF NOT EXISTS controle_vagas_funcionarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,11 +120,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
 # ==============================================================================
 
 INSERT_APARTAMENTO = "INSERT INTO apartamentos (numero, bloco, vagas) VALUES (?, ?, ?);"
-
 SELECT_ALL_APARTAMENTOS = "SELECT * FROM apartamentos ORDER BY numero, bloco;"
-
 SELECT_APARTAMENTO_BY_ID = "SELECT * FROM apartamentos WHERE id=?;"
-
 SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND bloco=?;"
 
 
@@ -134,14 +130,11 @@ SELECT_APARTAMENTO_BY_NUM_BLOCO = "SELECT * FROM apartamentos WHERE numero=? AND
 # ==============================================================================
 
 INSERT_MORADOR = "INSERT INTO moradores (nome, cnh, id_apartamento) VALUES (?, ?, ?);"
-
 SELECT_ALL_MORADORES = "SELECT * FROM moradores;"
-
 SELECT_MORADOR_BY_ID = "SELECT * FROM moradores WHERE id = ?;"
-
 SELECT_MORADORES_BY_APTO_ID = "SELECT * FROM moradores WHERE id_apartamento = ?;"
 
-UPDATE_MORADOR = "UPDATE moradores SET nome=?, cnh=?, id_apartamento=? WHERE id=?;" #CNH NÃO PODE MUDAR, IMUTAVEL!
+UPDATE_MORADOR = "UPDATE moradores SET nome=?, id_apartamento=? WHERE id=?;" 
 
 DELETE_MORADOR = "DELETE FROM moradores WHERE id=?;"
 
@@ -155,17 +148,17 @@ INSERT INTO funcionarios (nome, cpf, cargo, cnh, id_usuario)
 VALUES (?, ?, ?, ?, ?);
 """
 
-SELECT_ALL_FUNCIONARIOS = "SELECT * FROM funcionarios WHERE ativo = 1;"
+SELECT_ALL_FUNCIONARIOS = "SELECT * FROM funcionarios;"
 
 SELECT_FUNCIONARIO_BY_CPF = "SELECT * FROM funcionarios WHERE cpf = ?;"
 
 UPDATE_FUNCIONARIO = """
 UPDATE funcionarios 
-SET nome=?, cargo=?, cnh=?, id_usuario=? 
+SET nome=?, cargo=?, id_usuario=? 
 WHERE id=?;
 """
 
-DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
+DELETE_FUNCIONARIO = "DELETE FROM funcionarios WHERE id = ?;"
 
 
 # ==============================================================================
@@ -173,12 +166,10 @@ DELETE_FUNCIONARIO_LOGICO = "UPDATE funcionarios SET ativo = 0 WHERE id = ?;"
 # ==============================================================================
 
 INSERT_VISITANTE_CADASTRO = "INSERT INTO visitantes_cadastrados (nome, cnh, data_cadastro) VALUES (?, ?, ?);"
-
 SELECT_ALL_VISITANTES = "SELECT * FROM visitantes_cadastrados ORDER BY nome;"
-
 SELECT_VISITANTE_BY_ID = "SELECT * FROM visitantes_cadastrados WHERE id = ?;"
 
-UPDATE_VISITANTE = "UPDATE visitantes_cadastrados SET nome=?, cnh=? WHERE id=?;" #CNH NÃO PODE MUDAR, IMUTAVEL!
+UPDATE_VISITANTE = "UPDATE visitantes_cadastrados SET nome=? WHERE id=?;" 
 
 DELETE_VISITANTE = "DELETE FROM visitantes_cadastrados WHERE id=?;"
 
@@ -199,23 +190,16 @@ JOIN moradores m ON v.morador_id = m.id
 WHERE m.id_apartamento = ?;
 """
 SELECT_VEICULO_BY_PLACA = "SELECT * FROM veiculos WHERE placa = ?;"
-
 SELECT_VEICULOS_BY_MORADOR_ID = "SELECT * FROM veiculos WHERE morador_id = ?;"
-
 #SELECT_VEICULOS_BY_FUNCIONARIO_ID = "SELECT * FROM veiculos WHERE funcionario_id = ?;"
-
 SELECT_VEICULOS_BY_VISITANTE_ID = "SELECT * FROM veiculos WHERE visitante_id = ?;"
-
 SELECT_ALL_PLACAS = "SELECT placa FROM veiculos;"
 
 UPDATE_VEICULO = "UPDATE veiculos SET modelo=?, cor=?, morador_id=?, visitante_id=?, funcionario_id=? WHERE placa=?;"
-
 DELETE_VEICULO = "DELETE FROM veiculos WHERE placa=?;"
 
 # Catraca
-
 SET_VEICULO_ESTACIONADO = "UPDATE veiculos SET estacionado = 1 WHERE placa = ?;"
-
 SET_VEICULO_SAIDA = "UPDATE veiculos SET estacionado = 0 WHERE placa = ?;"
 
 
@@ -224,13 +208,9 @@ SET_VEICULO_SAIDA = "UPDATE veiculos SET estacionado = 0 WHERE placa = ?;"
 # ==============================================================================
 
 INSERT_TICKET = "INSERT INTO tickets_visitantes (placa, numero_vaga, entrada, id_visitante) VALUES (?, ?, ?, ?);"
-
 SELECT_TICKET_ATIVO = "SELECT * FROM tickets_visitantes WHERE placa = ?;"
-
 SELECT_ALL_TICKETS = "SELECT * FROM tickets_visitantes;"
-
 SELECT_VAGAS_OCUPADAS_VISITANTES = "SELECT numero_vaga FROM tickets_visitantes;"
-
 DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 
 # ==============================================================================
@@ -238,11 +218,8 @@ DELETE_TICKET = "DELETE FROM tickets_visitantes WHERE id=?;"
 # ==============================================================================
 
 INSERT_VAGA_FUNCIONARIO = "INSERT INTO controle_vagas_funcionarios (placa, numero_vaga, entrada, id_funcionario) VALUES (?, ?, ?, ?);"
-
 SELECT_VAGA_FUNCIONARIO_ATIVA = "SELECT * FROM controle_vagas_funcionarios WHERE placa = ?;"
-
 SELECT_VAGAS_OCUPADAS_FUNCIONARIOS = "SELECT numero_vaga FROM controle_vagas_funcionarios;"
-
 DELETE_VAGA_FUNCIONARIO = "DELETE FROM controle_vagas_funcionarios WHERE placa=?;"
 
 
@@ -326,11 +303,7 @@ SELECT_HISTORICO_BY_PLACA = """
 # ==============================================================================
 
 INSERT_USUARIO = "INSERT INTO usuarios (username, senha_hash, perfil) VALUES (?, ?, ?);"
-
 SELECT_USUARIO_BY_USERNAME = "SELECT * FROM usuarios WHERE username = ?;"
-
 SELECT_ALL_USUARIOS = "SELECT id, username, perfil FROM usuarios;" 
-
 DELETE_USUARIO = "DELETE FROM usuarios WHERE id = ?;"
-
 UPDATE_SENHA_USUARIO = "UPDATE usuarios SET senha_hash = ? WHERE id = ?;"

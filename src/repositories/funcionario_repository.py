@@ -33,7 +33,7 @@ class FuncionarioRepository(BaseRepository):
             return None
 
     def listar(self) -> list[Funcionario]:
-        """Retorna todos os funcionários ATIVOS."""
+        """Retorna todos os funcionários do sistema."""
         cursor = self._get_cursor()
         lista = []
         try:
@@ -45,18 +45,8 @@ class FuncionarioRepository(BaseRepository):
             print(f"Erro ao listar funcionários: {e}")
             return []
 
-    def listar_vagas_ocupadas_funcionarios(self):
-        """
-        Retorna um set com os números das vagas ocupadas na Zona C.
-        Ex: {'1', '3', '10'}
-        Vital para a classe Estacionamento alocar a próxima vaga livre.
-        """
-        cursor = self._get_cursor()
-        cursor.execute(queries.SELECT_VAGAS_OCUPADAS_FUNCIONARIOS)
-        return {str(row[0]) for row in cursor.fetchall()}
-
     def buscar_por_id(self, id_func: int) -> Funcionario:
-        """Busca funcionário pelo ID (mesmo inativos, para histórico)."""
+        """Busca funcionário pelo ID."""
         cursor = self._get_cursor()
         cursor.execute("SELECT * FROM funcionarios WHERE id = ?", (id_func,))
         row = cursor.fetchone()
@@ -76,38 +66,31 @@ class FuncionarioRepository(BaseRepository):
         return None
 
     def atualizar(self, funcionario: Funcionario):
-        """Atualiza dados cadastrais."""
+        """Atualiza dados cadastrais (CPF e CNH são imutáveis no banco)."""
         cursor = self._get_cursor()
         cursor.execute(queries.UPDATE_FUNCIONARIO, (
             funcionario.nome,
             funcionario.cargo,
-            funcionario.cnh,
             funcionario.id_usuario,
             funcionario.id 
         ))
 
     def remover(self, id_func: int):
         """
-        Realiza a EXCLUSÃO LÓGICA (Demitir/Inativar).
-        Não apaga o registro para manter histórico de quem liberou entradas antigas.
+        Realiza a EXCLUSÃO FÍSICA.
+        O 'ON DELETE CASCADE' do banco apagará automaticamente o veículo e a vaga da Zona C.
         """
         cursor = self._get_cursor()
-        cursor.execute(queries.DELETE_FUNCIONARIO_LOGICO, (id_func,))
-
-    def reativar(self, id_func: int):
-        """Reativa um funcionário que estava demitido/inativo."""
-        cursor = self._get_cursor()
-        query = "UPDATE funcionarios SET ativo = 1 WHERE id = ?;"
-        cursor.execute(query, (id_func,))
+        cursor.execute(queries.DELETE_FUNCIONARIO, (id_func,))
 
     def _montar_objeto(self, row) -> Funcionario:
         """Helper para converter tupla do banco em Objeto."""
+        # Colunas SQL V3: id, nome, cpf, cargo, cnh, id_usuario
         return Funcionario(
             id=row[0],
             nome=row[1],
             cpf=row[2],
             cargo=row[3],
             cnh=row[4],
-            ativo=bool(row[5]),
-            id_usuario=row[6]
+            id_usuario=row[5]
         )
